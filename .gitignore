@@ -1,0 +1,9 @@
+
+/IntegrationTests.TestClasses/bin
+/IntegrationTests.TestClasses/obj
+/IntegrationTests.WCFServiceApp/obj
+/IntegrationTests.WCFServiceApp/bin
+/IntegrationTests.WebApp/obj
+/IntegrationTests.WebApp/bin
+*.suo
+/build/IntegrationTests-results.xlsx

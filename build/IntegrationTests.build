@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<Config>Debug</Config>
+		<TestClassesAssembly>$(MSBuildProjectDirectory)\..\IntegrationTests.TestClasses\bin\$(Config)\IntegrationTests.TestClasses.dll</TestClassesAssembly>
+		<TestClassesAssemblyWebsphereMQ>$(MSBuildProjectDirectory)\..\IntegrationTests.TestClasses.WebsphereMQ\bin\$(Config)\IntegrationTests.TestClasses.WebsphereMQ.dll</TestClassesAssemblyWebsphereMQ>
+		<ConnString>server=localhost\SQLEXPRESS;Initial Catalog=PoCProcessamentoBatch;user=sa</ConnString>
+		<InputDir>C:\Shared</InputDir>
+		<OutputDir>Z:\</OutputDir>
+		<BigRequestSize>10000</BigRequestSize>		
+		<WebServiceUri>http://192.168.2.5/integrationtests/IntegrationTestsService.svc</WebServiceUri>		
+		<NetTcpUri>net.tcp://192.168.2.5/integrationtests/IntegrationTestsService.svc</NetTcpUri>		
+		<WebAppUri>http://192.168.2.5/integrationtests2/GenericHandler.ashx</WebAppUri>		
+		<TotalBatches>10</TotalBatches>
+		<Iteration>1</Iteration>
+		<BatchSize>1000</BatchSize>
+		<Flush>true</Flush>
+		<MSBuildExecutable>C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe</MSBuildExecutable>
+		<MSMQServerInputQueueName>.\private$\integrationtests.out</MSMQServerInputQueueName>
+		<MSMQServerOutputQueueName>.\private$\integrationtests.in</MSMQServerOutputQueueName>
+		<MSMQClientInputQueueName>FormatName:Direct=TCP:192.168.2.5\private$\integrationtests.out</MSMQClientInputQueueName>
+		<MSMQClientOutputQueueName>FormatName:Direct=TCP:192.168.2.5\private$\integrationtests.in</MSMQClientOutputQueueName>
+		<WebsphereMQServerQueueManager>miles</WebsphereMQServerQueueManager>
+		<WebsphereMQServerInputQueueName>pocbatch.out</WebsphereMQServerInputQueueName>
+		<WebsphereMQServerOutputQueueName>pocbatch.in</WebsphereMQServerOutputQueueName>
+		<WebsphereMQClientQueueManager>miles</WebsphereMQClientQueueManager>
+		<WebsphereMQClientInputQueueName>RECVQ</WebsphereMQClientInputQueueName>
+		<WebsphereMQClientOutputQueueName>SENDQ</WebsphereMQClientOutputQueueName>
+		<TcpServerHostName>192.168.2.5</TcpServerHostName>
+	</PropertyGroup>
+	
+  <ItemGroup>
+    <Iteration Include="1">
+		<Id>10</Id>
+	</Iteration>
+    <Iteration Include="2">
+		<Id>20</Id>
+	</Iteration>
+	<Iteration Include="3">
+		<Id>30</Id>
+	</Iteration>
+    <Iteration Include="4">
+		<Id>40</Id>
+	</Iteration>
+	<Iteration Include="5">
+		<Id>50</Id>
+	</Iteration>	
+	<Iteration Include="6">
+		<Id>60</Id>	
+	</Iteration>
+	<Iteration Include="7">
+		<Id>70</Id>	
+	</Iteration>
+	<Iteration Include="8">
+		<Id>80</Id>	
+	</Iteration>
+	<Iteration Include="9">
+		<Id>90</Id>	
+	</Iteration>
+	<Iteration Include="10">
+		<Id>100</Id>
+	</Iteration>	
+  </ItemGroup>
+	
+	<UsingTask TaskName="EmptyClientTable" AssemblyFile="$(TestClassesAssembly)" />
+	<UsingTask TaskName="DataGeneration" AssemblyFile="$(TestClassesAssembly)" />
+	<UsingTask TaskName="FileTransferRequest" AssemblyFile="$(TestClassesAssembly)" />
+	<UsingTask TaskName="FileTransferBigRequest" AssemblyFile="$(TestClassesAssembly)" />
+	<UsingTask TaskName="FileTransferTestServer" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="WCFSmallRequestsTest" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="WCFSmallBatchesTest" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="HTTPRequestTest" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="TcpTestServer" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="TcpClientSingleThreadTest" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="TcpClientMultiThreadTest" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="MSMQTestServer" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="MSMQTest" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="WebsphereMQServerTest" AssemblyFile="$(TestClassesAssemblyWebsphereMQ)" />				
+	<UsingTask TaskName="WebsphereMQTest" AssemblyFile="$(TestClassesAssemblyWebsphereMQ)" />				
+	
+	<Target Name="GenerateData">
+		<DataGeneration ConnString="$(ConnString)" />
+	</Target>
+	
+	<Target Name="CleanFiles">
+		<CreateItem Include="$(OutputDir)\request.xml">
+			<Output TaskParameter="Include" ItemName="DataFiles" />
+		</CreateItem>
+		<CreateItem Include="$(OutputDir)\bigrequest.xml">
+			<Output TaskParameter="Include" ItemName="DataFiles" />
+		</CreateItem>
+		<CreateItem Include="$(OutputDir)\response.xml">
+			<Output TaskParameter="Include" ItemName="DataFiles" />
+		</CreateItem>
+		<Message Text="@(DataFiles)" />
+		<Delete Files="@(DataFiles)" />	
+	</Target>
+	
+	<Target Name="FileTransferRequest">
+		<CallTarget Targets="CleanFiles" />
+		<EmptyClientTable ConnString="$(ConnString)" />				
+		<FileTransferRequest OutputDir="$(OutputDir)" InputDir="$(InputDir)" ConnString="$(ConnString)" Records="$(BigRequestSize)" />	
+	</Target>
+	
+	<Target Name="FileTransferBigRequest">
+		<CallTarget Targets="CleanFiles" />
+		<EmptyClientTable ConnString="$(ConnString)" />				
+		<FileTransferBigRequest OutputDir="$(OutputDir)" InputDir="$(InputDir)" ConnString="$(ConnString)" BigRequestSize="$(BigRequestSize)" />
+	</Target>	
+	
+	<Target Name="SoapSmallRequests">		
+		<EmptyClientTable ConnString="$(ConnString)" />				
+		<WCFSmallRequestsTest TotalRequests="$(BigRequestSize)" ConnString="$(ConnString)" WebServiceUri="$(WebServiceUri)" EndpointType="http" />
+	</Target>		
+	
+	<Target Name="NetTcpSmallRequests">		
+		<EmptyClientTable ConnString="$(ConnString)" />				
+		<WCFSmallRequestsTest TotalRequests="$(BigRequestSize)" ConnString="$(ConnString)" WebServiceUri="$(NetTcpUri)" EndpointType="nettcp" />
+	</Target>			
+	
+	<Target Name="SoapSmallBatches">		
+		<EmptyClientTable ConnString="$(ConnString)" />				
+		<WCFSmallBatchesTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(WebServiceUri)" EndpointType="http" />
+	</Target>					
+	
+	<Target Name="NetTcpSmallBatches">		
+		<EmptyClientTable ConnString="$(ConnString)" />						
+		<WCFSmallBatchesTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(NetTcpUri)" EndpointType="nettcp" />
+	</Target>						
+	
+	<Target Name="HttpRequest">
+		<EmptyClientTable ConnString="$(ConnString)" />						
+		<HTTPRequestTest ConnString="$(ConnString)" BigRequestSize="$(BigRequestSize)" Uri="$(WebAppUri)" Flush="$(Flush)" />
+	</Target>
+	
+	<Target Name="TcpClientSingleThreadTest">
+		<EmptyClientTable ConnString="$(ConnString)" />
+		<TcpClientSingleThreadTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" HostName="$(TcpServerHostName)" Port="8081" />
+	</Target>
+	
+	<Target Name="TcpClientMultiThreadTest">
+		<EmptyClientTable ConnString="$(ConnString)" />
+		<TcpClientMultiThreadTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" HostName="$(TcpServerHostName)" Port="8081" />
+	</Target>	
+	
+	<Target Name="MSMQTest">
+		<EmptyClientTable ConnString="$(ConnString)" />
+		<MSMQTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" InputQueueName="$(MSMQClientInputQueueName)" OutputQueueName="$(MSMQClientOutputQueueName)"/>
+	</Target>
+	
+	<Target Name="WebsphereMQTest">
+		<EmptyClientTable ConnString="$(ConnString)" />
+		<WebsphereMQTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" QueueManagerName="$(WebsphereMQClientQueueManager)" InputQueueName="$(WebsphereMQClientInputQueueName)" OutputQueueName="$(WebsphereMQClientOutputQueueName)" />			
+	</Target>
+
+	<Target Name="RunClientTests">							
+<!-- CallTarget Targets="SoapSmallRequests" />		
+		<CallTarget Targets="NetTcpSmallRequests" / -->		
+	
+		<!-- CallTarget Targets="FileTransferRequest" / -->		
+		<CallTarget Targets="FileTransferBigRequest" />				
+		<!-- CallTarget Targets="SoapSmallBatches" />		
+		<CallTarget Targets="NetTcpSmallBatches" />			
+		<CallTarget Targets="HttpRequest" />
+		<CallTarget Targets="TcpClientSingleThreadTest" /> 
+		<CallTarget Targets="TcpClientMultiThreadTest" />		
+		<CallTarget Targets="WebsphereMQTest" />
+		<CallTarget Targets="MSMQTest" / -->
+	</Target>
+	
+	<Target Name="FindBatchSize">
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="SoapSmallRequests" Properties="BigRequestSize=20000" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="SoapSmallBatches" Properties="BigRequestSize=20000;TotalBatches=2000;BatchSize=10" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="SoapSmallBatches" Properties="BigRequestSize=20000;TotalBatches=200;BatchSize=100" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="SoapSmallBatches" Properties="BigRequestSize=20000;TotalBatches=20;BatchSize=1000" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="SoapSmallBatches" Properties="BigRequestSize=20000;TotalBatches=10;BatchSize=2000" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="SoapSmallBatches" Properties="BigRequestSize=20000;TotalBatches=5;BatchSize=4000" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="SoapSmallBatches" Properties="BigRequestSize=20000;TotalBatches=4;BatchSize=5000" />		
+	</Target>
+	
+	<Target Name="FindBatchSizeNetTcp">
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="NetTcpSmallRequests" Properties="BigRequestSize=20000" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="NetTcpSm	gallBatches" Properties="BigRequestSize=20000;TotalBatches=2000;BatchSize=10" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="NetTcpSmallBatches" Properties="BigRequestSize=20000;TotalBatches=200;BatchSize=100" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="NetTcpSmallBatches" Properties="BigRequestSize=20000;TotalBatches=20;BatchSize=1000" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="NetTcpSmallBatches" Properties="BigRequestSize=20000;TotalBatches=10;BatchSize=2000" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="NetTcpSmallBatches" Properties="BigRequestSize=20000;TotalBatches=5;BatchSize=4000" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="NetTcpSmallBatches" Properties="BigRequestSize=20000;TotalBatches=4;BatchSize=5000" />		
+	</Target>	
+	
+	<Target Name="RunMainClientTests">												
+		<!-- CallTarget Targets="FileTransferRequest" />		
+		<CallTarget Targets="FileTransferBigRequest" />				
+		<CallTarget Targets="SoapSmallBatches" />		
+		<CallTarget Targets="NetTcpSmallBatches" / -->						
+		<CallTarget Targets="HttpRequest" />
+	</Target>	
+
+
+	<Target Name="RunAllTests"><!-- Inputs="%(Iteration.Id)" Outputs="%(Iteration.Id)a" -->				
+		<!-- MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20;Id=%(Iteration.Id)" />			
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50;Id=%(Iteration.Id)" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=500000;TotalBatches=500;Id=%(Iteration.Id)" />		
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000;Id=%(Iteration.Id)" /-->		
+		
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20" />			
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=500000;TotalBatches=500" />		
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000" />		
+	</Target>
+	
+	<Target Name="TcpTestServer">
+		<TcpTestServer  ConnString="$(ConnString)"  />	
+	</Target>
+	
+	<Target Name="FileTransferTestServer">
+		<FileTransferTestServer ConnString="$(ConnString)" InputDir="$(InputDir)" OutputDir="$(OutputDir)" />	
+	</Target>		
+	
+	<Target Name="MSMQTestServer">
+		<MSMQTestServer ConnString="$(ConnString)" InputQueueName="$(MSMQServerInputQueueName)" OutputQueueName="$(MSMQServerOutputQueueName)" />
+	</Target>
+	
+	<Target Name="WebsphereMQTestServer">
+		<WebsphereMQServerTest ConnString="$(ConnString)" QueueManagerName="$(WebsphereMQServerQueueManager)" InputQueueName="$(WebsphereMQServerInputQueueName)" OutputQueueName="$(WebsphereMQServerOutputQueueName)" />
+	</Target>
+	
+	<Target Name="TransformLog">
+		<XslTransformation XmlInputPaths="$(MSBuildProjectDirectory)\msbuild-output.xml" XslInputPath="$(MSBuildProjectDirectory)\msbuild.xsl" OutputPaths="$(MSBuildProjectDirectory)\log.html" />
+	</Target>	
+</Project>
+

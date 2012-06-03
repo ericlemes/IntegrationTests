@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="f8dae762-d49f-4172-98a1-17f60810c4ea" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost/integrationtests/IntegrationTestsService.svc?wsdl" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="IntegrationTestsService.wsdl" MetadataType="Wsdl" ID="36f4dc2d-a92a-488a-89bd-4017ed5fb190" SourceId="1" SourceUrl="http://localhost/integrationtests/IntegrationTestsService.svc?wsdl" />
+    <MetadataFile FileName="IntegrationTestsService.xsd" MetadataType="Schema" ID="b1eb88e5-1a11-454f-a5e1-a9fac1598cef" SourceId="1" SourceUrl="http://localhost/integrationtests/IntegrationTestsService.svc?xsd=xsd1" />
+    <MetadataFile FileName="IntegrationTestsService1.xsd" MetadataType="Schema" ID="cb3d9103-18d8-4697-ac6c-56608be2b7b2" SourceId="1" SourceUrl="http://localhost/integrationtests/IntegrationTestsService.svc?xsd=xsd2" />
+    <MetadataFile FileName="IntegrationTestsService2.xsd" MetadataType="Schema" ID="7455b1fd-13d3-48f0-afc1-2e5b03e3c74b" SourceId="1" SourceUrl="http://localhost/integrationtests/IntegrationTestsService.svc?xsd=xsd0" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>
