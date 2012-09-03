@@ -51,6 +51,7 @@
     <Compile Include="Client\FileTransferRequest.cs" />
     <Compile Include="Client\MSMQTest.cs" />
     <Compile Include="Client\TcpClientMultiThreadTest.cs" />
+    <Compile Include="Client\TcpClientMultiThreadTest2.cs" />
     <Compile Include="Client\TcpClientSingleThreadTest.cs" />
     <Compile Include="Client\WCFSmallBatchesTest.cs" />
     <Compile Include="Client\WCFSmallRequestsTest.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Server\FileTransferTestServer.cs" />
     <Compile Include="Server\MSMQTestServer.cs" />
     <Compile Include="Server\TcpTestServer.cs" />
+    <Compile Include="Server\TcpTestServer2.cs" />
     <Compile Include="Service References\IntegrationTestsService\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
