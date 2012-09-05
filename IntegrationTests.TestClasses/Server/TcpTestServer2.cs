@@ -57,10 +57,7 @@ namespace IntegrationTests.TestClasses.Server
 			TcpClient tcpClient = tcpListener.EndAcceptTcpClient(result);			
 			NetworkStream clientStream = tcpClient.GetStream();
 
-			TcpServer2ConnectionContext ctx = new TcpServer2ConnectionContext();
-			ctx.FirstResponse = true;
-			ctx.ClientStream = clientStream;
-
+			TcpServer2ConnectionContext ctx = new TcpServer2ConnectionContext(clientStream);			
 			BeginRead(ctx);
 
 			tcpListener.BeginAcceptTcpClient(BeginAcceptSocketCallback, tcpListener);
@@ -68,18 +65,15 @@ namespace IntegrationTests.TestClasses.Server
 
 		private void BeginRead(TcpServer2ConnectionContext connectionContext)
 		{
-			TcpServer2InputStreamContext ctx = new TcpServer2InputStreamContext();
-			ctx.RequestStream = new MemoryStream();
-			ctx.ConnectionContext = connectionContext;
-			ctx.ClientStream = connectionContext.ClientStream;
+			TcpServer2InputStreamContext ctx = new TcpServer2InputStreamContext(connectionContext);			
 			ctx.Header = new byte[sizeof(long)];
-			ctx.ClientStream.BeginRead(ctx.Header, 0, sizeof(long), BeginReadCallback, ctx);					
+			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Header, 0, sizeof(long), BeginReadCallback, ctx);					
 		}
 
 		private void BeginReadCallback(IAsyncResult result)
 		{			
 			TcpServer2InputStreamContext ctx = result.AsyncState as TcpServer2InputStreamContext;
-			int bytesRead = ctx.ClientStream.EndRead(result);			
+			int bytesRead = ctx.ConnectionContext.ClientStream.EndRead(result);			
 
 			if (!ctx.HeaderRead)
 			{
@@ -100,16 +94,13 @@ namespace IntegrationTests.TestClasses.Server
 			{
 				if (ctx.FinishedReading)
 				{
-					TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext();
-					outputContext.ConnectionContext = ctx.ConnectionContext;
-					outputContext.OutputStream = new MemoryStream();
+					TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext(ctx.ConnectionContext);					
 					
 					ctx.RequestStream.Seek(0, SeekOrigin.Begin);					
 					
 					streamUtil.ProcessClientBigRequest(ConnString, ctx.RequestStream, outputContext.OutputStream, false, null);					
 
-					outputContext.OutputStream.Seek(0, SeekOrigin.Begin);
-					outputContext.ClientStream = ctx.ClientStream;
+					outputContext.OutputStream.Seek(0, SeekOrigin.Begin);					
 
 					byte[] buffer = BitConverter.GetBytes(outputContext.OutputStream.Length);
 
@@ -122,7 +113,7 @@ namespace IntegrationTests.TestClasses.Server
 					if (ctx.ConnectionContext.FirstResponse)
 					{
 						ctx.ConnectionContext.FirstResponse = false;
-						outputContext.ClientStream.BeginWrite(buffer, 0, buffer.Length, BeginWriteCallback, outputContext);
+						outputContext.ConnectionContext.ClientStream.BeginWrite(buffer, 0, buffer.Length, BeginWriteCallback, outputContext);
 					}
 					else
 					{
@@ -132,10 +123,8 @@ namespace IntegrationTests.TestClasses.Server
 				else
 				{
 					Log.LogMessage("Writing empty header");
-					TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext();
-					outputContext.ConnectionContext = ctx.ConnectionContext;
-					outputContext.EmptyResponse = true;
-					outputContext.ClientStream = ctx.ClientStream;
+					TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext(ctx.ConnectionContext);					
+					outputContext.EmptyResponse = true;					
 					ctx.ConnectionContext.OutputQueue.Enqueue(outputContext);					
 				}
 			}
@@ -143,14 +132,14 @@ namespace IntegrationTests.TestClasses.Server
 			{
 				ctx.Buffer = new byte[256];
 				int bytesToRead = ctx.RemainingBytes > ctx.Buffer.Length ? ctx.Buffer.Length : (int)ctx.RemainingBytes;								
-				ctx.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
+				ctx.ConnectionContext.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
 			}
 		}
 
 		private void BeginWriteCallback(IAsyncResult result)
 		{
 			TcpServer2OutputStreamContext ctx = result.AsyncState as TcpServer2OutputStreamContext;
-			ctx.ClientStream.EndWrite(result);
+			ctx.ConnectionContext.ClientStream.EndWrite(result);
 
 			if (ctx.EmptyResponse)
 				return;
@@ -160,7 +149,7 @@ namespace IntegrationTests.TestClasses.Server
 
 			if (bytesWritten > 0)
 			{
-				ctx.ClientStream.BeginWrite(buffer, 0, bytesWritten, BeginWriteCallback, ctx);
+				ctx.ConnectionContext.ClientStream.BeginWrite(buffer, 0, bytesWritten, BeginWriteCallback, ctx);
 			}
 			else
 			{
@@ -169,12 +158,12 @@ namespace IntegrationTests.TestClasses.Server
 				if (ctx2.EmptyResponse)
 				{
 					buffer = BitConverter.GetBytes((long)0);
-					ctx2.ClientStream.BeginWrite(buffer, 0, buffer.Length, BeginWriteCallback, ctx2);
+					ctx2.ConnectionContext.ClientStream.BeginWrite(buffer, 0, buffer.Length, BeginWriteCallback, ctx2);
 				}
 				else
 				{
 					buffer = BitConverter.GetBytes(ctx2.OutputStream.Length);
-					ctx2.ClientStream.BeginWrite(buffer, 0, buffer.Length, BeginWriteCallback, ctx2);
+					ctx2.ConnectionContext. ClientStream.BeginWrite(buffer, 0, buffer.Length, BeginWriteCallback, ctx2);
 				}
 			}
 		}
@@ -182,17 +171,11 @@ namespace IntegrationTests.TestClasses.Server
 
 	internal class TcpServer2OutputStreamContext
 	{
+		private MemoryStream outputStream = new MemoryStream();
 		public MemoryStream OutputStream
 		{
-			get;
-			set;
-		}
-
-		public NetworkStream ClientStream
-		{
-			get;
-			set;
-		}
+			get { return outputStream; }			
+		}		
 
 		public bool EmptyResponse
 		{
@@ -200,12 +183,17 @@ namespace IntegrationTests.TestClasses.Server
 			set;
 		}
 
+		private TcpServer2ConnectionContext connectionContext;
 		public TcpServer2ConnectionContext ConnectionContext
 		{
-			get;
-			set;
+			get { return connectionContext; }			
 		}
-	}
+
+		public TcpServer2OutputStreamContext(TcpServer2ConnectionContext connectionContext)
+		{
+			this.connectionContext = connectionContext;
+		}
+	}				
 
 	internal class TcpServer2InputStreamContext
 	{
@@ -213,18 +201,12 @@ namespace IntegrationTests.TestClasses.Server
 		{
 			get;
 			set;
-		}
+		}		
 
-		public NetworkStream ClientStream
-		{
-			get;
-			set;
-		}
-
+		private MemoryStream requestStream = new MemoryStream();
 		public MemoryStream RequestStream
 		{
-			get;
-			set;
+			get { return requestStream;}			
 		}
 
 		public long RemainingBytes
@@ -245,37 +227,50 @@ namespace IntegrationTests.TestClasses.Server
 			set;
 		}
 
+		private TcpServer2ConnectionContext connectionContext;
+		public TcpServer2ConnectionContext ConnectionContext
+		{
+			get { return connectionContext;}			
+		}
+
 		public bool FinishedReading
 		{
 			get;
 			set;
 		}
 
-		public TcpServer2ConnectionContext ConnectionContext
-		{
-			get;
-			set;
+		public TcpServer2InputStreamContext(TcpServer2ConnectionContext connectionContext)
+		{			
+			this.connectionContext = connectionContext;			
 		}
 	}
 
 	internal class TcpServer2ConnectionContext
 	{
+		private bool firstResponse = true;		
+
 		public bool FirstResponse
 		{
-			get;
-			set;
+			get { return firstResponse; }
+			set { firstResponse = value; }
 		}
+
+		private NetworkStream clientStream;
 
 		public NetworkStream ClientStream
 		{
-			get;
-			set;
+			get { return clientStream; }			
 		}
 
 		private Queue<TcpServer2OutputStreamContext> outputQueue = new Queue<TcpServer2OutputStreamContext>();
 		public Queue<TcpServer2OutputStreamContext> OutputQueue
 		{
 			get { return outputQueue; }			
+		}
+
+		public TcpServer2ConnectionContext(NetworkStream clientStream)
+		{
+			this.clientStream = clientStream;
 		}
 	}
 }
