@@ -120,30 +120,22 @@ namespace IntegrationTests.TestClasses.Server
 				Log.LogMessage("Reading " + readCount.ToString());
 				ctx.HeaderRead = true;
 				ctx.RemainingBytes = BitConverter.ToInt64(ctx.Header, 0);
+
+				if (ctx.RemainingBytes == 0)
+					EnqueueEmptyHeader(ctx);
+				else
+					ReadChunk(ctx);				
 			}
 			else
 			{
 				ctx.RemainingBytes -= bytesRead;
 				ctx.RequestStream.Write(ctx.Buffer, 0, bytesRead);
-				if (ctx.RemainingBytes == 0)
-					ctx.FinishedReading = true;
-			}
 
-			if (ctx.RemainingBytes <= 0)
-			{
-				if (ctx.FinishedReading)
-				{
+				if (ctx.RemainingBytes == 0)
 					ProcessRequest(ctx);
-				}
 				else
-				{
-					EnqueueEmptyHeader(ctx);
-				}
-			}
-			else
-			{
-				ReadChunk(ctx);
-			}
+					ReadChunk(ctx);
+			}		
 		}
 
 		private void BeginWriteCallback(IAsyncResult result)
@@ -253,6 +245,12 @@ namespace IntegrationTests.TestClasses.Server
 		public TcpServer2InputStreamContext(TcpServer2ConnectionContext connectionContext)
 		{			
 			this.connectionContext = connectionContext;			
+		}
+
+		public void ReadHeader()
+		{
+			this.HeaderRead = true;
+			this.RemainingBytes = BitConverter.ToInt64(this.Header, 0);
 		}
 	}
 
