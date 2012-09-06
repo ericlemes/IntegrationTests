@@ -34,6 +34,8 @@ namespace IntegrationTests.TestClasses.Server
 		private int readCount = 0;
 		private int writeCount = 0;		
 
+		private const int bufferSize = 100 * 1024;
+
 		public override bool Execute()
 		{
 			Log.LogMessage("Listening to TCP Connections on port " + Port.ToString());
@@ -130,7 +132,7 @@ namespace IntegrationTests.TestClasses.Server
 			}
 			else
 			{
-				ctx.Buffer = new byte[256];
+				ctx.Buffer = new byte[bufferSize];
 				int bytesToRead = ctx.RemainingBytes > ctx.Buffer.Length ? ctx.Buffer.Length : (int)ctx.RemainingBytes;								
 				ctx.ConnectionContext.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
 			}
@@ -144,7 +146,7 @@ namespace IntegrationTests.TestClasses.Server
 			if (ctx.EmptyResponse)
 				return;
 
-			byte[] buffer = new byte[256];
+			byte[] buffer = new byte[bufferSize];
 			int bytesWritten = ctx.OutputStream.Read(buffer, 0, buffer.Length);
 
 			if (bytesWritten > 0)
@@ -153,8 +155,9 @@ namespace IntegrationTests.TestClasses.Server
 			}
 			else
 			{
-				Log.LogMessage("Finished writing " + writeCount.ToString());
-				TcpServer2OutputStreamContext ctx2 = ctx.ConnectionContext.OutputQueue.Dequeue();
+				Log.LogMessage("Finished writing " + writeCount.ToString());				
+
+				TcpServer2OutputStreamContext ctx2 = ctx.ConnectionContext.OutputQueue.Dequeue();				
 				if (ctx2.EmptyResponse)
 				{
 					buffer = BitConverter.GetBytes((long)0);

@@ -61,6 +61,8 @@ namespace IntegrationTests.TestClasses.Client
 		private ManualResetEvent sendDone = new ManualResetEvent(false);
 		private ManualResetEvent receiveDone = new ManualResetEvent(false);
 
+		private const int bufferSize = 1024;
+
 		public override bool Execute()
 		{
 			Stopwatch watch = new Stopwatch();
@@ -121,7 +123,7 @@ namespace IntegrationTests.TestClasses.Client
 
 			if (ctx.OutputStream.Position < ctx.OutputStream.Length)
 			{
-				byte[] buffer = new byte[256];
+				byte[] buffer = new byte[bufferSize];
 				int read = ctx.OutputStream.Read(buffer, 0, buffer.Length);
 				ctx.ClientStream.BeginWrite(buffer, 0, read, BeginWriteCallback, ctx);
 			}
@@ -164,7 +166,7 @@ namespace IntegrationTests.TestClasses.Client
 
 				if (ctx.ResponseSize > 0)
 				{
-					ctx.Buffer = new byte[256];
+					ctx.Buffer = new byte[bufferSize];
 					int bytesToRead = (ctx.ResponseSize - ctx.TotalRead) > ctx.Buffer.Length ? ctx.Buffer.Length : (int)(ctx.ResponseSize - ctx.TotalRead);
 					Log.LogMessage("Reading " + bytesToRead.ToString() + " bytes");
 					ctx.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
@@ -182,7 +184,7 @@ namespace IntegrationTests.TestClasses.Client
 				{					
 					int bytesToRead = (ctx.ResponseSize - ctx.TotalRead) > ctx.Buffer.Length ? ctx.Buffer.Length : (int)(ctx.ResponseSize - ctx.TotalRead);
 					Log.LogMessage("Reading " + bytesToRead.ToString() + " bytes");
-					ctx.Buffer = new byte[256];
+					ctx.Buffer = new byte[bufferSize];
 					ctx.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
 				}
 				else
