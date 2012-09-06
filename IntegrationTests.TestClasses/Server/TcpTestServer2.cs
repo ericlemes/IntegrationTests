@@ -72,6 +72,43 @@ namespace IntegrationTests.TestClasses.Server
 			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Header, 0, sizeof(long), BeginReadCallback, ctx);					
 		}
 
+		private void ProcessRequest(TcpServer2InputStreamContext ctx)
+		{
+			TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext(ctx.ConnectionContext);
+			ctx.RequestStream.Seek(0, SeekOrigin.Begin);
+			streamUtil.ProcessClientBigRequest(ConnString, ctx.RequestStream, outputContext.OutputStream, false, null);
+			outputContext.OutputStream.Seek(0, SeekOrigin.Begin);
+			byte[] buffer = BitConverter.GetBytes(outputContext.OutputStream.Length);
+			writeCount++;
+			Log.LogMessage("Finished reading " + readCount.ToString());
+			Log.LogMessage("Writing " + writeCount.ToString());
+			BeginRead(ctx.ConnectionContext);
+			if (ctx.ConnectionContext.FirstResponse)
+			{
+				ctx.ConnectionContext.FirstResponse = false;
+				outputContext.ConnectionContext.ClientStream.BeginWrite(buffer, 0, buffer.Length, BeginWriteCallback, outputContext);
+			}
+			else
+			{
+				ctx.ConnectionContext.OutputQueue.Enqueue(outputContext);
+			}
+		}
+
+		private void EnqueueEmptyHeader(TcpServer2InputStreamContext ctx)
+		{
+			Log.LogMessage("Writing empty header");
+			TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext(ctx.ConnectionContext);
+			outputContext.EmptyResponse = true;
+			ctx.ConnectionContext.OutputQueue.Enqueue(outputContext);					
+		}
+
+		private void ReadChunk(TcpServer2InputStreamContext ctx)
+		{
+			ctx.Buffer = new byte[bufferSize];
+			int bytesToRead = ctx.RemainingBytes > ctx.Buffer.Length ? ctx.Buffer.Length : (int)ctx.RemainingBytes;
+			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
+		}
+
 		private void BeginReadCallback(IAsyncResult result)
 		{			
 			TcpServer2InputStreamContext ctx = result.AsyncState as TcpServer2InputStreamContext;
@@ -96,45 +133,16 @@ namespace IntegrationTests.TestClasses.Server
 			{
 				if (ctx.FinishedReading)
 				{
-					TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext(ctx.ConnectionContext);					
-					
-					ctx.RequestStream.Seek(0, SeekOrigin.Begin);					
-					
-					streamUtil.ProcessClientBigRequest(ConnString, ctx.RequestStream, outputContext.OutputStream, false, null);					
-
-					outputContext.OutputStream.Seek(0, SeekOrigin.Begin);					
-
-					byte[] buffer = BitConverter.GetBytes(outputContext.OutputStream.Length);
-
-					writeCount++;
-					Log.LogMessage("Finished reading " + readCount.ToString());
-					Log.LogMessage("Writing " + writeCount.ToString());
-
-					BeginRead(ctx.ConnectionContext);
-
-					if (ctx.ConnectionContext.FirstResponse)
-					{
-						ctx.ConnectionContext.FirstResponse = false;
-						outputContext.ConnectionContext.ClientStream.BeginWrite(buffer, 0, buffer.Length, BeginWriteCallback, outputContext);
-					}
-					else
-					{
-						ctx.ConnectionContext.OutputQueue.Enqueue(outputContext);
-					}
+					ProcessRequest(ctx);
 				}
 				else
 				{
-					Log.LogMessage("Writing empty header");
-					TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext(ctx.ConnectionContext);					
-					outputContext.EmptyResponse = true;					
-					ctx.ConnectionContext.OutputQueue.Enqueue(outputContext);					
+					EnqueueEmptyHeader(ctx);
 				}
 			}
 			else
 			{
-				ctx.Buffer = new byte[bufferSize];
-				int bytesToRead = ctx.RemainingBytes > ctx.Buffer.Length ? ctx.Buffer.Length : (int)ctx.RemainingBytes;								
-				ctx.ConnectionContext.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
+				ReadChunk(ctx);
 			}
 		}
 
