@@ -24,8 +24,8 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 			get { return clientStream; }
 		}
 
-		private Queue<TcpServer2OutputStreamContext> outputQueue = new Queue<TcpServer2OutputStreamContext>();
-		public Queue<TcpServer2OutputStreamContext> OutputQueue
+		private Queue<OutputStreamContext> outputQueue = new Queue<OutputStreamContext>();
+		public Queue<OutputStreamContext> OutputQueue
 		{
 			get { return outputQueue; }
 		}

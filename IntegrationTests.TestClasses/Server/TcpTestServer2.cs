@@ -74,7 +74,7 @@ namespace IntegrationTests.TestClasses.Server
 
 		private void ProcessRequest(InputStreamContext ctx)
 		{
-			TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext(ctx.ConnectionContext);
+			OutputStreamContext outputContext = new OutputStreamContext(ctx.ConnectionContext);
 			ctx.RequestStream.Seek(0, SeekOrigin.Begin);
 			streamUtil.ProcessClientBigRequest(ConnString, ctx.RequestStream, outputContext.OutputStream, false, null);
 			outputContext.OutputStream.Seek(0, SeekOrigin.Begin);
@@ -97,7 +97,7 @@ namespace IntegrationTests.TestClasses.Server
 		private void EnqueueEmptyHeader(InputStreamContext ctx)
 		{
 			Log.LogMessage("Writing empty header");
-			TcpServer2OutputStreamContext outputContext = new TcpServer2OutputStreamContext(ctx.ConnectionContext);
+			OutputStreamContext outputContext = new OutputStreamContext(ctx.ConnectionContext);
 			outputContext.EmptyResponse = true;
 			ctx.ConnectionContext.OutputQueue.Enqueue(outputContext);					
 		}
@@ -137,7 +137,7 @@ namespace IntegrationTests.TestClasses.Server
 
 		private void BeginWriteCallback(IAsyncResult result)
 		{
-			TcpServer2OutputStreamContext ctx = result.AsyncState as TcpServer2OutputStreamContext;
+			OutputStreamContext ctx = result.AsyncState as OutputStreamContext;
 			ctx.ConnectionContext.ClientStream.EndWrite(result);
 
 			if (ctx.EmptyResponse)
@@ -154,7 +154,7 @@ namespace IntegrationTests.TestClasses.Server
 			{
 				Log.LogMessage("Finished writing " + writeCount.ToString());				
 
-				TcpServer2OutputStreamContext ctx2 = ctx.ConnectionContext.OutputQueue.Dequeue();				
+				OutputStreamContext ctx2 = ctx.ConnectionContext.OutputQueue.Dequeue();				
 				if (ctx2.EmptyResponse)
 				{
 					buffer = BitConverter.GetBytes((long)0);
@@ -168,32 +168,6 @@ namespace IntegrationTests.TestClasses.Server
 			}
 		}
 	}
-
-	internal class TcpServer2OutputStreamContext
-	{
-		private MemoryStream outputStream = new MemoryStream();
-		public MemoryStream OutputStream
-		{
-			get { return outputStream; }			
-		}		
-
-		public bool EmptyResponse
-		{
-			get;
-			set;
-		}
-
-		private ConnectionContext connectionContext;
-		public ConnectionContext ConnectionContext
-		{
-			get { return connectionContext; }			
-		}
-
-		public TcpServer2OutputStreamContext(ConnectionContext connectionContext)
-		{
-			this.connectionContext = connectionContext;
-		}
-	}				
 
 	
 
