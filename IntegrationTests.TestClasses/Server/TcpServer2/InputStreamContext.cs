@@ -50,13 +50,13 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 			this.buffer = new byte[bufferSize];
 		}
 
-		public void ReadHeader()
+		public void ProcessHeaderAfterRead()
 		{
 			this.headerRead = true;
 			this.remainingBytes = BitConverter.ToInt64(this.Header, 0);
 		}
 
-		public void ProcessChunk(int bytesRead)
+		public void ProcessChunkAfterRead(int bytesRead)
 		{
 			this.remainingBytes -= bytesRead;
 			this.RequestStream.Write(this.Buffer, 0, bytesRead);

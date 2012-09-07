@@ -117,7 +117,7 @@ namespace IntegrationTests.TestClasses.Server
 			{
 				readCount++;
 				Log.LogMessage("Reading " + readCount.ToString());
-				ctx.ReadHeader();
+				ctx.ProcessHeaderAfterRead();
 
 				if (ctx.RemainingBytes == 0)
 					EnqueueEmptyHeader(ctx);
@@ -126,7 +126,7 @@ namespace IntegrationTests.TestClasses.Server
 			}
 			else
 			{
-				ctx.ProcessChunk(bytesRead);
+				ctx.ProcessChunkAfterRead(bytesRead);
 
 				if (ctx.RemainingBytes == 0)
 					ProcessRequest(ctx);
