@@ -8,10 +8,10 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 {
 	internal class InputStreamContext
 	{
+		private byte[] header = new byte[sizeof(long)];
 		public byte[] Header
 		{
-			get;
-			set;
+			get { return header; }			
 		}
 
 		private MemoryStream requestStream = new MemoryStream();
@@ -32,27 +32,22 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 			get { return headerRead; }
 		}
 
+		private byte[] buffer;
 		public byte[] Buffer
 		{
-			get;
-			set;
+			get { return buffer; }			
 		}
 
 		private TcpServer2ConnectionContext connectionContext;
 		public TcpServer2ConnectionContext ConnectionContext
 		{
 			get { return connectionContext; }
-		}
+		}		
 
-		public bool FinishedReading
-		{
-			get;
-			set;
-		}
-
-		public InputStreamContext(TcpServer2ConnectionContext connectionContext)
+		public InputStreamContext(TcpServer2ConnectionContext connectionContext, int bufferSize)
 		{
 			this.connectionContext = connectionContext;
+			this.buffer = new byte[bufferSize];
 		}
 
 		public void ReadHeader()

@@ -68,8 +68,7 @@ namespace IntegrationTests.TestClasses.Server
 
 		private void BeginRead(TcpServer2ConnectionContext connectionContext)
 		{
-			InputStreamContext ctx = new InputStreamContext(connectionContext);			
-			ctx.Header = new byte[sizeof(long)];
+			InputStreamContext ctx = new InputStreamContext(connectionContext, bufferSize);						
 			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Header, 0, sizeof(long), BeginReadCallback, ctx);					
 		}
 
@@ -104,8 +103,7 @@ namespace IntegrationTests.TestClasses.Server
 		}
 
 		private void ReadChunk(InputStreamContext ctx)
-		{
-			ctx.Buffer = new byte[bufferSize];
+		{			
 			int bytesToRead = ctx.RemainingBytes > ctx.Buffer.Length ? ctx.Buffer.Length : (int)ctx.RemainingBytes;
 			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
 		}
