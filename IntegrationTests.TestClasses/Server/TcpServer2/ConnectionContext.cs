@@ -6,15 +6,19 @@ using System.Net.Sockets;
 
 namespace IntegrationTests.TestClasses.Server.TcpServer2
 {
+
 	internal class ConnectionContext
 	{
+		private bool firstResponse = true;
+
 		public bool FirstResponse
 		{
-			get;
-			set;			
+			get { return firstResponse; }
+			set { firstResponse = value; }
 		}
 
 		private NetworkStream clientStream;
+
 		public NetworkStream ClientStream
 		{
 			get { return clientStream; }
@@ -31,4 +35,5 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 			this.clientStream = clientStream;
 		}
 	}
+
 }

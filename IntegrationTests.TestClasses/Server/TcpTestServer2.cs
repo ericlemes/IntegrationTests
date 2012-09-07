@@ -60,13 +60,13 @@ namespace IntegrationTests.TestClasses.Server
 			TcpClient tcpClient = tcpListener.EndAcceptTcpClient(result);			
 			NetworkStream clientStream = tcpClient.GetStream();
 
-			TcpServer2ConnectionContext ctx = new TcpServer2ConnectionContext(clientStream);			
+			ConnectionContext ctx = new ConnectionContext(clientStream);			
 			BeginRead(ctx);
 
 			tcpListener.BeginAcceptTcpClient(BeginAcceptSocketCallback, tcpListener);
 		}
 
-		private void BeginRead(TcpServer2ConnectionContext connectionContext)
+		private void BeginRead(ConnectionContext connectionContext)
 		{
 			InputStreamContext ctx = new InputStreamContext(connectionContext, bufferSize);						
 			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Header, 0, sizeof(long), BeginReadCallback, ctx);					
@@ -183,13 +183,13 @@ namespace IntegrationTests.TestClasses.Server
 			set;
 		}
 
-		private TcpServer2ConnectionContext connectionContext;
-		public TcpServer2ConnectionContext ConnectionContext
+		private ConnectionContext connectionContext;
+		public ConnectionContext ConnectionContext
 		{
 			get { return connectionContext; }			
 		}
 
-		public TcpServer2OutputStreamContext(TcpServer2ConnectionContext connectionContext)
+		public TcpServer2OutputStreamContext(ConnectionContext connectionContext)
 		{
 			this.connectionContext = connectionContext;
 		}
@@ -197,32 +197,5 @@ namespace IntegrationTests.TestClasses.Server
 
 	
 
-	internal class TcpServer2ConnectionContext
-	{
-		private bool firstResponse = true;		
 
-		public bool FirstResponse
-		{
-			get { return firstResponse; }
-			set { firstResponse = value; }
-		}
-
-		private NetworkStream clientStream;
-
-		public NetworkStream ClientStream
-		{
-			get { return clientStream; }			
-		}
-
-		private Queue<TcpServer2OutputStreamContext> outputQueue = new Queue<TcpServer2OutputStreamContext>();
-		public Queue<TcpServer2OutputStreamContext> OutputQueue
-		{
-			get { return outputQueue; }			
-		}
-
-		public TcpServer2ConnectionContext(NetworkStream clientStream)
-		{
-			this.clientStream = clientStream;
-		}
-	}
 }

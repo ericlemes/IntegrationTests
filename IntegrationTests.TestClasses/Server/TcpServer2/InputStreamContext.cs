@@ -38,13 +38,13 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 			get { return buffer; }			
 		}
 
-		private TcpServer2ConnectionContext connectionContext;
-		public TcpServer2ConnectionContext ConnectionContext
+		private ConnectionContext connectionContext;
+		public ConnectionContext ConnectionContext
 		{
 			get { return connectionContext; }
 		}		
 
-		public InputStreamContext(TcpServer2ConnectionContext connectionContext, int bufferSize)
+		public InputStreamContext(ConnectionContext connectionContext, int bufferSize)
 		{
 			this.connectionContext = connectionContext;
 			this.buffer = new byte[bufferSize];
