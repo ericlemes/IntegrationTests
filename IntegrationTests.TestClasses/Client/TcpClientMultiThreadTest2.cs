@@ -55,13 +55,17 @@ namespace IntegrationTests.TestClasses.Client
 		private StreamUtil util = new StreamUtil();		
 
 		private int batchesSent = 0;
+		private int responsesProcessed = 0;
 
 		private int recordCount = 1;
 
 		private ManualResetEvent sendDone = new ManualResetEvent(false);
 		private ManualResetEvent receiveDone = new ManualResetEvent(false);
+		private ManualResetEvent processingDone = new ManualResetEvent(false);
 
-		private const int bufferSize = 1024;
+		private const int bufferSize = 100 * 1024;
+
+		private Queue<TcpClient2InputStreamContext> inputQueue = new Queue<TcpClient2InputStreamContext>();
 
 		public override bool Execute()
 		{
@@ -77,11 +81,16 @@ namespace IntegrationTests.TestClasses.Client
 			WriteHeader(stream);
 			ReadHeader(stream);
 
+			Thread t = new Thread(ProcessInputQueue);
+			t.Start();
+
 			sendDone.WaitOne();
 			receiveDone.WaitOne();
 
 			tcpClient.Close();
-			watch.Stop();			
+			watch.Stop();
+
+			processingDone.WaitOne();
 
 			Log.LogMessage("Total processing time: " + watch.Elapsed.TotalSeconds.ToString("0.00") + " seconds");
 
@@ -190,14 +199,42 @@ namespace IntegrationTests.TestClasses.Client
 				else
 				{
 					Log.LogMessage("Finished reading " + ctx.InputStream.Length.ToString() + " bytes");
-					ctx.InputStream.Seek(0, SeekOrigin.Begin);
-					Log.LogMessage("Before import stream " + ctx.ID.ToString());
-					util.ImportarStream(ConnString, ctx.InputStream);
-					Log.LogMessage("Stream imported " + ctx.ID.ToString());
+					lock (inputQueue)
+						inputQueue.Enqueue(ctx);					
 
 					ReadHeader(ctx.ClientStream);
 				}
 			}														
+		}
+
+		public void ProcessInputQueue()
+		{
+			while (true)
+			{
+				TcpClient2InputStreamContext ctx = null;
+				lock (inputQueue)
+				{
+					if (inputQueue.Count > 0)
+						ctx = inputQueue.Dequeue();
+				}
+
+				if (ctx == null)
+				{
+					Thread.Sleep(250);
+					continue;
+				}
+
+				ctx.InputStream.Seek(0, SeekOrigin.Begin);
+				Log.LogMessage("Before import stream " + ctx.ID.ToString());
+				util.ImportarStream(ConnString, ctx.InputStream);
+				Log.LogMessage("Stream imported " + ctx.ID.ToString());
+
+				responsesProcessed++;
+				if (responsesProcessed == TotalBatches)
+					break;
+			}
+
+			processingDone.Set();
 		}
 	}
 

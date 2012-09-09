@@ -6,7 +6,7 @@ using System.IO;
 
 namespace IntegrationTests.TestClasses.Server.TcpServer2
 {
-	internal class InputStreamContext
+	public class InputStreamContext
 	{
 		private byte[] header = new byte[sizeof(long)];
 		public byte[] Header
@@ -60,6 +60,11 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 		{
 			this.remainingBytes -= bytesRead;
 			this.RequestStream.Write(this.Buffer, 0, bytesRead);
+		}
+
+		public bool EmptyResponse { 
+			get; 
+			set; 
 		}
 	}
 }

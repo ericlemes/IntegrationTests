@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Threading;
 
 namespace IntegrationTests.TestClasses.Server.TcpServer2
 {
@@ -29,6 +30,12 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 		public OutputStreamContext(ConnectionContext connectionContext)
 		{
 			this.connectionContext = connectionContext;
+		}
+
+		private ManualResetEvent writeCompleted = new ManualResetEvent(false);
+		public ManualResetEvent WriteCompleted
+		{
+			get { return writeCompleted; }
 		}
 	}				
 
