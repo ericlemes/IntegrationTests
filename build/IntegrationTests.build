@@ -4,14 +4,14 @@
 		<Config>Debug</Config>
 		<TestClassesAssembly>$(MSBuildProjectDirectory)\..\IntegrationTests.TestClasses\bin\$(Config)\IntegrationTests.TestClasses.dll</TestClassesAssembly>
 		<TestClassesAssemblyWebsphereMQ>$(MSBuildProjectDirectory)\..\IntegrationTests.TestClasses.WebsphereMQ\bin\$(Config)\IntegrationTests.TestClasses.WebsphereMQ.dll</TestClassesAssemblyWebsphereMQ>
-		<ConnString>server=localhost\SQLEXPRESS;Initial Catalog=PoCProcessamentoBatch;user=sa</ConnString>
+		<ConnString>server=localhost\SQLEXPRESS;Initial Catalog=PoCProcessamentoBatch;user=sa;pwd=123456</ConnString>
 		<InputDir>C:\Shared</InputDir>
 		<OutputDir>Z:\</OutputDir>
 		<BigRequestSize>10000</BigRequestSize>		
 		<WebServiceUri>http://192.168.2.5/integrationtests/IntegrationTestsService.svc</WebServiceUri>		
 		<NetTcpUri>net.tcp://192.168.2.5/integrationtests/IntegrationTestsService.svc</NetTcpUri>		
 		<WebAppUri>http://192.168.2.5/integrationtests2/GenericHandler.ashx</WebAppUri>		
-		<TotalBatches>10</TotalBatches>
+		<TotalBatches>50</TotalBatches>
 		<Iteration>1</Iteration>
 		<BatchSize>1000</BatchSize>
 		<Flush>true</Flush>
@@ -26,7 +26,8 @@
 		<WebsphereMQClientQueueManager>miles</WebsphereMQClientQueueManager>
 		<WebsphereMQClientInputQueueName>RECVQ</WebsphereMQClientInputQueueName>
 		<WebsphereMQClientOutputQueueName>SENDQ</WebsphereMQClientOutputQueueName>
-		<TcpServerHostName>192.168.2.5</TcpServerHostName>
+		<TcpServerHostName>192.168.2.7</TcpServerHostName>
+		<!-- TcpServerHostName>127.0.0.1</TcpServerHostName -->
 	</PropertyGroup>
 	
   <ItemGroup>
@@ -71,8 +72,14 @@
 	<UsingTask TaskName="WCFSmallBatchesTest" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="HTTPRequestTest" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="TcpTestServer" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="TcpTestServer2" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="TcpTestServer3" AssemblyFile="$(TestClassesAssembly)" />		
+	<UsingTask TaskName="TcpTestServer4" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="TcpClientSingleThreadTest" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="TcpClientMultiThreadTest" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="TcpClientMultiThreadTest2" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="TcpClientMultiThreadTest3" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="TcpClientMultiThreadTest4" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="MSMQTestServer" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="MSMQTest" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="WebsphereMQServerTest" AssemblyFile="$(TestClassesAssemblyWebsphereMQ)" />				
@@ -143,6 +150,21 @@
 		<TcpClientMultiThreadTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" HostName="$(TcpServerHostName)" Port="8081" />
 	</Target>	
 	
+	<Target Name="TcpClientMultiThreadTest2">
+		<EmptyClientTable ConnString="$(ConnString)" />
+		<TcpClientMultiThreadTest2 ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" HostName="$(TcpServerHostName)" Port="8081" />
+	</Target>		
+	
+	<Target Name="TcpClientMultiThreadTest3">
+		<EmptyClientTable ConnString="$(ConnString)" />
+		<TcpClientMultiThreadTest3 ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" HostName="$(TcpServerHostName)" Port="8081" />
+	</Target>			
+	
+	<Target Name="TcpClientMultiThreadTest4">
+		<EmptyClientTable ConnString="$(ConnString)" />
+		<TcpClientMultiThreadTest4 ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" HostName="$(TcpServerHostName)" Port="8081" />
+	</Target>				
+	
 	<Target Name="MSMQTest">
 		<EmptyClientTable ConnString="$(ConnString)" />
 		<MSMQTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" InputQueueName="$(MSMQClientInputQueueName)" OutputQueueName="$(MSMQClientOutputQueueName)"/>
@@ -155,17 +177,19 @@
 
 	<Target Name="RunClientTests">							
 <!-- CallTarget Targets="SoapSmallRequests" />		
-		<CallTarget Targets="NetTcpSmallRequests" / -->		
-	
-		<!-- CallTarget Targets="FileTransferRequest" / -->		
+		<CallTarget Targets="NetTcpSmallRequests" />			
+		<CallTarget Targets="FileTransferRequest" />		
 		<CallTarget Targets="FileTransferBigRequest" />				
-		<!-- CallTarget Targets="SoapSmallBatches" />		
+		<CallTarget Targets="SoapSmallBatches" />		
 		<CallTarget Targets="NetTcpSmallBatches" />			
-		<CallTarget Targets="HttpRequest" />
-		<CallTarget Targets="TcpClientSingleThreadTest" /> 
-		<CallTarget Targets="TcpClientMultiThreadTest" />		
-		<CallTarget Targets="WebsphereMQTest" />
-		<CallTarget Targets="MSMQTest" / -->
+		<CallTarget Targets="HttpRequest" /-->
+		<!-- CallTarget Targets="TcpClientSingleThreadTest" / --> 
+		<!-- CallTarget Targets="TcpClientMultiThreadTest" / -->		
+		<!-- CallTarget Targets="WebsphereMQTest" />
+		<CallTarget Targets="MSMQTest" /-->
+		<CallTarget Targets="TcpClientMultiThreadTest2" />
+		<!-- CallTarget Targets="TcpClientMultiThreadTest3" / -->
+		<!-- CallTarget Targets="TcpClientMultiThreadTest4" / -->
 	</Target>
 	
 	<Target Name="FindBatchSize">
@@ -197,21 +221,33 @@
 	</Target>	
 
 
-	<Target Name="RunAllTests"><!-- Inputs="%(Iteration.Id)" Outputs="%(Iteration.Id)a" -->				
-		<!-- MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20;Id=%(Iteration.Id)" />			
+	<Target Name="RunAllTests" Inputs="%(Iteration.Id)" Outputs="%(Iteration.Id)a">				
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20;Id=%(Iteration.Id)" />			
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50;Id=%(Iteration.Id)" />
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=500000;TotalBatches=500;Id=%(Iteration.Id)" />		
-		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000;Id=%(Iteration.Id)" /-->		
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000;Id=%(Iteration.Id)" />		
 		
-		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20" />			
+		<!-- MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20" />			
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50" />
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=500000;TotalBatches=500" />		
-		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000" />		
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000" / -->		
 	</Target>
 	
 	<Target Name="TcpTestServer">
 		<TcpTestServer  ConnString="$(ConnString)"  />	
 	</Target>
+	
+	<Target Name="TcpTestServer2">
+		<TcpTestServer2  ConnString="$(ConnString)"  />	
+	</Target>	
+	
+	<Target Name="TcpTestServer3">
+		<TcpTestServer3 ConnString="$(ConnString)"  />	
+	</Target>		
+	
+	<Target Name="TcpTestServer4">
+		<TcpTestServer4 ConnString="$(ConnString)"  />	
+	</Target>		
 	
 	<Target Name="FileTransferTestServer">
 		<FileTransferTestServer ConnString="$(ConnString)" InputDir="$(InputDir)" OutputDir="$(OutputDir)" />	

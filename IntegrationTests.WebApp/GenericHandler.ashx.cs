@@ -32,9 +32,8 @@ namespace IntegrationTests.WebApp
 
             context.Response.ContentType = "text/xml";
             this.context = context;
-            
-            StreamUtil u = new StreamUtil();            
-            u.ProcessClientBigRequest(connString, context.Request.InputStream, context.Response.OutputStream, true, Flush);
+                        
+            StreamUtil.ProcessClientBigRequest(connString, context.Request.InputStream, context.Response.OutputStream, true, Flush);
             context.Response.Flush();
             context.Response.End();
         }

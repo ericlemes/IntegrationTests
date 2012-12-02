@@ -66,8 +66,8 @@ namespace IntegrationTests.ServiceClasses
         public void ImportarArquivo(string connString, string file)
         {
             FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.None);            
-            StreamUtil u = new StreamUtil();
-            u.ImportarStream(connString, fs);            
+            //StreamUtil u = new StreamUtil();
+            StreamUtil.ImportarStream(connString, fs);            
         }
 
         public int ProcessRequest(string requestFile)
@@ -87,8 +87,7 @@ namespace IntegrationTests.ServiceClasses
         {
             FileStream requestFileStream = new FileStream(requestFile, FileMode.Open);       
             FileStream responseFileStream = new FileStream(responseFile, FileMode.Create);            
-            StreamUtil u = new StreamUtil();
-            u.ProcessClientBigRequest(ConnString, requestFileStream, responseFileStream, true, null);
+            StreamUtil.ProcessClientBigRequest(ConnString, requestFileStream, responseFileStream, true, null);
         }
 
         public static void WaitForUnlock(string file)

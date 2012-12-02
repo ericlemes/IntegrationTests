@@ -46,9 +46,7 @@ namespace IntegrationTests.TestClasses.Client
         {
             get;
             set;
-        }
-
-        private StreamUtil _util = new StreamUtil();
+        }        
 
         public override bool Execute()
         {
@@ -71,7 +69,7 @@ namespace IntegrationTests.TestClasses.Client
                 long totalBytes = ReadHeader(stream);
 
                 MemoryStream inputStream = ReadResponse(totalBytes, stream);
-                _util.ImportarStream(ConnString, inputStream);
+                StreamUtil.ImportarStream(ConnString, inputStream);
 
                 count += BatchSize;                
             }            
@@ -87,7 +85,7 @@ namespace IntegrationTests.TestClasses.Client
         private MemoryStream GenerateRequest(int count)
         {
             MemoryStream ms = new MemoryStream();            
-            _util.GenerateBigRequest(ms, false, count, count + (BatchSize - 1));
+            StreamUtil.GenerateBigRequest(ms, false, count, count + (BatchSize - 1));
             ms.Seek(0, SeekOrigin.Begin);
 
             return ms;

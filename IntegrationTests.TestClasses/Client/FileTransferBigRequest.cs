@@ -55,9 +55,8 @@ namespace IntegrationTests.TestClasses.Client
             Log.LogMessage("Writing big request with " + BigRequestSize.ToString() + " items");
 
             FileStream fs = new FileStream(OutputDir + "\\bigrequest.xml", FileMode.Create);
-
-            StreamUtil util = new StreamUtil();
-            util.GenerateBigRequest(fs, true, BigRequestSize);
+            
+            StreamUtil.GenerateBigRequest(fs, true, BigRequestSize);
 
             while (!finished)
                 Thread.Sleep(250);

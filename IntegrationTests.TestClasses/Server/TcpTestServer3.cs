@@ -9,11 +9,11 @@ using System.Net.Sockets;
 using System.Threading;
 using Microsoft.Build.Framework;
 using IntegrationTests.ServiceClasses;
-using IntegrationTests.TestClasses.Server.TcpServer2;
+using IntegrationTests.TestClasses.Server.TcpServer3;
 
 namespace IntegrationTests.TestClasses.Server
 {
-	public class TcpTestServer2 : Task
+	public class TcpTestServer3 : Task
 	{
 
 		[Required]
@@ -57,7 +57,7 @@ namespace IntegrationTests.TestClasses.Server
 			TcpClient tcpClient = tcpListener.EndAcceptTcpClient(result);			
 			NetworkStream clientStream = tcpClient.GetStream();
 
-			ConnectionContext ctx = new ConnectionContext(clientStream, ConnString, this);
+			ConnectionContext ctx = new ConnectionContext(clientStream, ConnString, this, Log);
 			ctx.StartProcessingInputQueue();
 			BeginRead(ctx);
 
@@ -67,7 +67,7 @@ namespace IntegrationTests.TestClasses.Server
 		public void BeginRead(ConnectionContext connectionContext)
 		{
 			InputStreamContext ctx = new InputStreamContext(connectionContext, bufferSize);						
-			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Header, 0, sizeof(long), BeginReadCallback, ctx);					
+			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Header, 0, sizeof(long) + sizeof(int), BeginReadCallback, ctx);					
 		}
 
 		private void ProcessRequest(InputStreamContext ctx)
@@ -99,8 +99,8 @@ namespace IntegrationTests.TestClasses.Server
 			if (!ctx.HeaderRead)
 			{
 				readCount++;
-				Log.LogMessage("Reading " + readCount.ToString());
 				ctx.ProcessHeaderAfterRead();
+				Log.LogMessage("Reading " + ctx.ID.ToString());				
 
 				if (ctx.RemainingBytes == 0)
 					EnqueueEmptyHeader(ctx);
@@ -135,7 +135,7 @@ namespace IntegrationTests.TestClasses.Server
 			}
 			else
 			{
-				Log.LogMessage("Finished writing ");
+				Log.LogMessage("Finished writing " + ctx.ID.ToString());
 				ctx.WriteCompleted.Set();
 			}
 		}

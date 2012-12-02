@@ -52,6 +52,8 @@
     <Compile Include="Client\MSMQTest.cs" />
     <Compile Include="Client\TcpClientMultiThreadTest.cs" />
     <Compile Include="Client\TcpClientMultiThreadTest2.cs" />
+    <Compile Include="Client\TcpClientMultiThreadTest3.cs" />
+    <Compile Include="Client\TcpClientMultiThreadTest4.cs" />
     <Compile Include="Client\TcpClientSingleThreadTest.cs" />
     <Compile Include="Client\WCFSmallBatchesTest.cs" />
     <Compile Include="Client\WCFSmallRequestsTest.cs" />
@@ -65,8 +67,16 @@
     <Compile Include="Server\TcpServer2\OutputStreamContext.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Server\TcpServer3\ConnectionContext.cs" />
+    <Compile Include="Server\TcpServer3\InputStreamContext.cs" />
+    <Compile Include="Server\TcpServer3\OutputStreamContext.cs" />
+    <Compile Include="Server\TcpServer4\ConnectionContextTPL.cs" />
+    <Compile Include="Server\TcpServer4\InputStreamContext.cs" />
+    <Compile Include="Server\TcpServer4\OutputStreamContext.cs" />
     <Compile Include="Server\TcpTestServer.cs" />
     <Compile Include="Server\TcpTestServer2.cs" />
+    <Compile Include="Server\TcpTestServer3.cs" />
+    <Compile Include="Server\TcpTestServer4.cs" />
     <Compile Include="Service References\IntegrationTestsService\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

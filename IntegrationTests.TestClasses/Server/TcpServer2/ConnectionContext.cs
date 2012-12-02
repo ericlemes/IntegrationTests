@@ -40,9 +40,7 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 			this.tcpServer = server;
 		}
 
-		private string connString;		
-
-		private StreamUtil streamUtil = new StreamUtil();
+		private string connString;			
 
 		private Thread inputQueueThread;
 
@@ -75,7 +73,7 @@ namespace IntegrationTests.TestClasses.Server.TcpServer2
 				else
 				{
 					ctx.RequestStream.Seek(0, SeekOrigin.Begin);
-					streamUtil.ProcessClientBigRequest(connString, ctx.RequestStream, outputContext.OutputStream, false, null);
+					StreamUtil.ProcessClientBigRequest(connString, ctx.RequestStream, outputContext.OutputStream, false, null);
 					outputContext.OutputStream.Seek(0, SeekOrigin.Begin);
 
 					byte[] buffer = BitConverter.GetBytes(outputContext.OutputStream.Length);

@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Build.Utilities;
-using System.IO;
-using System.Net.Sockets;
-using IntegrationTests.ServiceClasses;
-using System.Diagnostics;
 using System.Threading;
+using System.Net.Sockets;
+using System.Diagnostics;
+using IntegrationTests.ServiceClasses;
+using System.IO;
 using Microsoft.Build.Framework;
+using System.Threading.Tasks;
 
 namespace IntegrationTests.TestClasses.Client
 {
-	public class TcpClientMultiThreadTest2 : Task
+	public class TcpClientMultiThreadTest4 : Microsoft.Build.Utilities.Task
 	{
 
 		[Required]
@@ -65,16 +65,20 @@ namespace IntegrationTests.TestClasses.Client
 
 		private Queue<TcpClient2InputStreamContext> inputQueue = new Queue<TcpClient2InputStreamContext>();
 
+		private TaskFactory writeTaskFactory = new TaskFactory();
+
 		public override bool Execute()
 		{
 			Stopwatch watch = new Stopwatch();
-			watch.Start();			
+			watch.Start();
 
 			Log.LogMessage("Starting TCP transfer (multi thread) with " + TotalBatches.ToString() + " batchs with " + BatchSize.ToString() + " items each");
 
 			TcpClient tcpClient = new TcpClient();
+			tcpClient.SendTimeout = 10000;
+			tcpClient.ReceiveTimeout = 10000;
 			tcpClient.Connect(HostName, Port);
-			NetworkStream stream = tcpClient.GetStream();			
+			NetworkStream stream = tcpClient.GetStream();
 
 			WriteHeader(stream);
 			ReadHeader(stream);
@@ -115,24 +119,33 @@ namespace IntegrationTests.TestClasses.Client
 			ctx.OutputStream = new MemoryStream();
 			ctx.ClientStream = stream;
 			StreamUtil.GenerateBigRequest(ctx.OutputStream, false, recordCount, recordCount + (BatchSize - 1));
-			ctx.OutputStream.Seek(0, SeekOrigin.Begin);			
+			ctx.OutputStream.Seek(0, SeekOrigin.Begin);								
 
 			byte[] header = BitConverter.GetBytes(ctx.OutputStream.Length);
-			stream.BeginWrite(header, 0, header.Length, BeginWriteCallback, ctx);			
 
-			recordCount += BatchSize;			
+			Task.Factory.FromAsync<byte[], int, int>(stream.BeginWrite, stream.EndWrite, header, 0, header.Length, ctx).ContinueWith(BeginWriteCallback).ContinueWith(TaskExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);			
+
+			recordCount += BatchSize;
 		}
 
-		private void BeginWriteCallback(IAsyncResult result)
+		private void TaskExceptionHandler(Task task)
 		{
-			TcpClient2OutputStreamContext ctx = (TcpClient2OutputStreamContext)result.AsyncState;
-			ctx.ClientStream.EndWrite(result);			
+			Log.LogError(task.Exception.InnerException.Message);			
+		}
+
+		private void BeginWriteCallback(Task task)
+		{
+			TcpClient2OutputStreamContext ctx = (TcpClient2OutputStreamContext)task.AsyncState;			
 
 			if (ctx.OutputStream.Position < ctx.OutputStream.Length)
 			{
 				byte[] buffer = new byte[bufferSize];
 				int read = ctx.OutputStream.Read(buffer, 0, buffer.Length);
-				ctx.ClientStream.BeginWrite(buffer, 0, read, BeginWriteCallback, ctx);
+				
+				Task t = Task.Factory.FromAsync<byte[], int, int>(ctx.ClientStream.BeginWrite, ctx.ClientStream.EndWrite, buffer, 0, read, ctx);
+				t.ContinueWith(BeginWriteCallback).ContinueWith(TaskExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
+
+				//ctx.ClientStream.BeginWrite(buffer, 0, read, BeginWriteCallback, ctx);
 			}
 			else
 			{
@@ -150,16 +163,16 @@ namespace IntegrationTests.TestClasses.Client
 			ctx.ClientStream = stream;
 			ctx.Header = new byte[sizeof(long)];
 			ctx.HeaderRead = false;
-			
-			stream.BeginRead(ctx.Header, 0, ctx.Header.Length, BeginReadCallback, ctx);
+
+			Task<int>.Factory.FromAsync<byte[], int, int>(stream.BeginRead, stream.EndRead, ctx.Header, 0, ctx.Header.Length, ctx).ContinueWith(BeginReadCallback).ContinueWith(TaskExceptionHandler, TaskContinuationOptions.OnlyOnFaulted); ;			
 		}
 
-		private void BeginReadCallback(IAsyncResult result)
+		private void BeginReadCallback(Task<int> task)
 		{
-			TcpClient2InputStreamContext ctx = (TcpClient2InputStreamContext)result.AsyncState;
-			int bytesRead = ctx.ClientStream.EndRead(result);
+			TcpClient2InputStreamContext ctx = (TcpClient2InputStreamContext)task.AsyncState;
+			int bytesRead = task.Result;
 			Log.LogMessage("Read " + bytesRead.ToString() + " bytes");
-			
+
 			if (!ctx.HeaderRead)
 			{
 				Log.LogMessage("Reading Header");
@@ -176,7 +189,9 @@ namespace IntegrationTests.TestClasses.Client
 					ctx.Buffer = new byte[bufferSize];
 					int bytesToRead = (ctx.ResponseSize - ctx.TotalRead) > ctx.Buffer.Length ? ctx.Buffer.Length : (int)(ctx.ResponseSize - ctx.TotalRead);
 					Log.LogMessage("Reading " + bytesToRead.ToString() + " bytes");
-					ctx.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
+
+					Task<int>.Factory.FromAsync<byte[], int, int>(ctx.ClientStream.BeginRead, ctx.ClientStream.EndRead, ctx.Buffer, 0, bytesToRead,
+						ctx).ContinueWith(BeginReadCallback).ContinueWith(TaskExceptionHandler, TaskContinuationOptions.OnlyOnFaulted); ;					
 				}
 				else
 					receiveDone.Set();
@@ -185,24 +200,25 @@ namespace IntegrationTests.TestClasses.Client
 			{
 				ctx.TotalRead += bytesRead;
 				Log.LogMessage("Writing " + bytesRead.ToString() + " to input stream");
-				ctx.InputStream.Write(ctx.Buffer, 0, bytesRead);				
+				ctx.InputStream.Write(ctx.Buffer, 0, bytesRead);
 
-				if (ctx.TotalRead < ctx.ResponseSize)					
-				{					
+				if (ctx.TotalRead < ctx.ResponseSize)
+				{
 					int bytesToRead = (ctx.ResponseSize - ctx.TotalRead) > ctx.Buffer.Length ? ctx.Buffer.Length : (int)(ctx.ResponseSize - ctx.TotalRead);
 					Log.LogMessage("Reading " + bytesToRead.ToString() + " bytes");
 					ctx.Buffer = new byte[bufferSize];
-					ctx.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
+
+					Task<int>.Factory.FromAsync<byte[], int, int>(ctx.ClientStream.BeginRead, ctx.ClientStream.EndRead, ctx.Buffer, 0, bytesToRead, ctx).ContinueWith(BeginReadCallback).ContinueWith(TaskExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);
 				}
 				else
 				{
 					Log.LogMessage("Finished reading " + ctx.InputStream.Length.ToString() + " bytes");
 					lock (inputQueue)
-						inputQueue.Enqueue(ctx);					
+						inputQueue.Enqueue(ctx);
 
 					ReadHeader(ctx.ClientStream);
 				}
-			}														
+			}
 		}
 
 		public void ProcessInputQueue()
@@ -222,89 +238,23 @@ namespace IntegrationTests.TestClasses.Client
 					continue;
 				}
 
-				ctx.InputStream.Seek(0, SeekOrigin.Begin);
-				Log.LogMessage("Before import stream " + ctx.ID.ToString());
-				StreamUtil.ImportarStream(ConnString, ctx.InputStream);
-				Log.LogMessage("Stream imported " + ctx.ID.ToString());
+				Parallel.Invoke(() =>
+				{
+					ctx.InputStream.Seek(0, SeekOrigin.Begin);
+					Log.LogMessage("Before import stream " + ctx.ID.ToString());
+					StreamUtil.ImportarStream(ConnString, ctx.InputStream);
+					Log.LogMessage("Stream imported " + ctx.ID.ToString());
+					responsesProcessed++;
+				});
 
-				responsesProcessed++;
 				if (responsesProcessed == TotalBatches)
 					break;
+
 			}
 
 			processingDone.Set();
 		}
-	}
 
-	internal class TcpClient2InputStreamContext
-	{
-		public int ID
-		{
-			get;
-			set;
-		}
 
-		public NetworkStream ClientStream
-		{
-			get;
-			set;
-		}
-
-		public byte[] Header
-		{
-			get;
-			set;
-		}
-
-		public byte[] Buffer
-		{
-			get;
-			set;
-		}
-
-		public long ResponseSize
-		{
-			get;
-			set;
-		}
-
-		public MemoryStream InputStream
-		{
-			get;
-			set;
-		}
-
-		public bool HeaderRead
-		{
-			get;
-			set;
-		}
-
-		public long TotalRead
-		{
-			get;
-			set;
-		}		
-	}
-
-	internal class TcpClient2OutputStreamContext
-	{
-		public int ID
-		{
-			get;
-			set;
-		}
-
-		public MemoryStream OutputStream
-		{
-			get;
-			set;
-		}
-
-		public NetworkStream ClientStream
-		{
-			get;
-			set;
-		}
 	}
 }

@@ -35,8 +35,7 @@ namespace IntegrationTests.TestClasses.Server
             set;
         }
                 
-        private int messageCount = 0;                
-        private StreamUtil util = new StreamUtil();
+        private int messageCount = 0;                        
         private MessageQueue inputQueue;
         private MessageQueue outputQueue;        
 
@@ -63,7 +62,7 @@ namespace IntegrationTests.TestClasses.Server
             Message resp = new Message();
             resp.BodyStream = new MemoryStream();
             
-            util.ProcessClientBigRequest(ConnString, e.Message.BodyStream, resp.BodyStream, false, null);
+            StreamUtil.ProcessClientBigRequest(ConnString, e.Message.BodyStream, resp.BodyStream, false, null);
             resp.BodyStream.Seek(0, SeekOrigin.Begin);
             
             outputQueue.Send(resp, MessageQueueTransactionType.Single);

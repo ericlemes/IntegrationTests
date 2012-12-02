@@ -79,9 +79,8 @@ namespace IntegrationTests.TestClasses.WebsphereMQ.Client
             {
                 IBM.WMQ.MQMessage msg = new IBM.WMQ.MQMessage();
 
-                MemoryStream ms = new MemoryStream();
-                StreamUtil u = new StreamUtil();
-                u.GenerateBigRequest(ms, false, count, count + (BatchSize - 1));
+                MemoryStream ms = new MemoryStream();                
+                StreamUtil.GenerateBigRequest(ms, false, count, count + (BatchSize - 1));
                 MQUtil.StreamToMQMessage(ms, msg);
                 queueManager.Put(OutputQueueName, msg);
                 count += BatchSize;
@@ -98,8 +97,7 @@ namespace IntegrationTests.TestClasses.WebsphereMQ.Client
         }
 
         private void ProcessMQQueue()
-        {
-            StreamUtil u = new StreamUtil();
+        {            
             bool keepListening = true;
             while (keepListening)
             {
@@ -116,7 +114,7 @@ namespace IntegrationTests.TestClasses.WebsphereMQ.Client
 
                     Log.LogMessage("Waiting for more " + messageCount.ToString());                    
 
-                    u.ImportarStream(ConnString, ms);
+                    StreamUtil.ImportarStream(ConnString, ms);
 
                     if (messageCount <= 0)
                     {

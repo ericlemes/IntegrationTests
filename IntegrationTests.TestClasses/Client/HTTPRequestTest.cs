@@ -41,9 +41,7 @@ namespace IntegrationTests.TestClasses.Client
         {
             get;
             set;
-        }
-
-        private StreamUtil _util;
+        }        
 
         private bool finished = false;
         private bool asyncError = false;
@@ -82,11 +80,9 @@ namespace IntegrationTests.TestClasses.Client
                 request.Headers.Add("Flush:true");
 
             Stream requestStream = request.EndGetRequestStream(result);
-            Log.LogMessage("Writing request with " + BigRequestSize.ToString() + " itens. Flush " + Flush.ToString());
-
-            StreamUtil util = new StreamUtil();
+            Log.LogMessage("Writing request with " + BigRequestSize.ToString() + " itens. Flush " + Flush.ToString());            
                         
-            util.GenerateBigRequest(requestStream, true, BigRequestSize);
+            StreamUtil.GenerateBigRequest(requestStream, true, BigRequestSize);
             Log.LogMessage("Finished writing request.");
             request.BeginGetResponse(GetResponseCallback, request);
         }
@@ -110,9 +106,8 @@ namespace IntegrationTests.TestClasses.Client
             Stream responseStream = response.GetResponseStream();
                 
             Log.LogMessage("Reading response");
-
-            _util = new StreamUtil();
-            _util.ImportarStream(ConnString, responseStream);
+            
+            StreamUtil.ImportarStream(ConnString, responseStream);
             finished = true;            
         }
     }

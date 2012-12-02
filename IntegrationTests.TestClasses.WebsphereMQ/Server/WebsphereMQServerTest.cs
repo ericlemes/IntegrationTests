@@ -46,8 +46,7 @@ namespace IntegrationTests.TestClasses.WebsphereMQ.Server
 
             IBM.WMQ.MQQueueManager queueManager = new IBM.WMQ.MQQueueManager(QueueManagerName);
             IBM.WMQ.MQQueue queue = queueManager.AccessQueue(InputQueueName, IBM.WMQ.MQC.MQOO_INPUT_SHARED);
-
-            StreamUtil u = new StreamUtil();
+            
             int count = 0;
 
             while (true)
@@ -63,7 +62,7 @@ namespace IntegrationTests.TestClasses.WebsphereMQ.Server
                     MQUtil.MQMessageToStream(msg, ms);
                     msg.ClearMessage();
 
-                    u.ProcessClientBigRequest(ConnString, ms, respStream, false, null);
+                    StreamUtil.ProcessClientBigRequest(ConnString, ms, respStream, false, null);
 
                     MQUtil.StreamToMQMessage(respStream, msg);
                     queueManager.Put(OutputQueueName, msg);

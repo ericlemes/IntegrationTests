@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Build.Utilities;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading;
 using Microsoft.Build.Framework;
 using IntegrationTests.ServiceClasses;
-using IntegrationTests.TestClasses.Server.TcpServer2;
+using System.Threading;
+using System.Net.Sockets;
+using System.Net;
+using IntegrationTests.TestClasses.Server.TcpServer4;
+using System.Threading.Tasks;
 
 namespace IntegrationTests.TestClasses.Server
 {
-	public class TcpTestServer2 : Task
+	public class TcpTestServer4 : Microsoft.Build.Utilities.Task
 	{
 
 		[Required]
@@ -28,9 +27,9 @@ namespace IntegrationTests.TestClasses.Server
 		{
 			get { return port; }
 			set { port = value; }
-		}						
+		}		
 
-		private int readCount = 0;		
+		private int readCount = 0;
 
 		private const int bufferSize = 100 * 1024;
 
@@ -53,28 +52,32 @@ namespace IntegrationTests.TestClasses.Server
 		{
 			Log.LogMessage("Received socket connection");			
 
-			TcpListener tcpListener = (TcpListener)result.AsyncState;
-			TcpClient tcpClient = tcpListener.EndAcceptTcpClient(result);			
+			TcpListener tcpListener = (TcpListener)result.AsyncState;			
+			TcpClient tcpClient = tcpListener.EndAcceptTcpClient(result);
+			tcpClient.SendTimeout = 10000;
+			tcpClient.ReceiveTimeout = 10000;
 			NetworkStream clientStream = tcpClient.GetStream();
 
-			ConnectionContext ctx = new ConnectionContext(clientStream, ConnString, this);
+			ConnectionContextTPL ctx = new ConnectionContextTPL(clientStream, ConnString, this, Log);
 			ctx.StartProcessingInputQueue();
 			BeginRead(ctx);
 
 			tcpListener.BeginAcceptTcpClient(BeginAcceptSocketCallback, tcpListener);
 		}
 
-		public void BeginRead(ConnectionContext connectionContext)
+		public void BeginRead(ConnectionContextTPL connectionContext)
 		{
-			InputStreamContext ctx = new InputStreamContext(connectionContext, bufferSize);						
-			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Header, 0, sizeof(long), BeginReadCallback, ctx);					
+			InputStreamContext ctx = new InputStreamContext(connectionContext, bufferSize);
+
+			Task<int>.Factory.FromAsync<byte[], int, int>(ctx.ConnectionContext.ClientStream.BeginRead,
+				ctx.ConnectionContext.ClientStream.EndRead, ctx.Header, 0, sizeof(long), ctx).ContinueWith(BeginReadCallback);
 		}
 
 		private void ProcessRequest(InputStreamContext ctx)
 		{
 			lock (ctx.ConnectionContext)
-				ctx.ConnectionContext.InputQueue.Enqueue(ctx);			
-			BeginRead(ctx.ConnectionContext);			
+				ctx.ConnectionContext.InputQueue.Enqueue(ctx);
+			BeginRead(ctx.ConnectionContext);
 		}
 
 		private void EnqueueEmptyHeader(InputStreamContext ctx)
@@ -82,19 +85,20 @@ namespace IntegrationTests.TestClasses.Server
 			Log.LogMessage("Writing empty header");
 			InputStreamContext inputContext = new InputStreamContext(ctx.ConnectionContext, bufferSize);
 			inputContext.EmptyResponse = true;
-			ctx.ConnectionContext.InputQueue.Enqueue(inputContext);					
+			ctx.ConnectionContext.InputQueue.Enqueue(inputContext);
 		}
 
 		private void ReadChunk(InputStreamContext ctx)
-		{			
+		{
 			int bytesToRead = ctx.RemainingBytes > ctx.Buffer.Length ? ctx.Buffer.Length : (int)ctx.RemainingBytes;
-			ctx.ConnectionContext.ClientStream.BeginRead(ctx.Buffer, 0, bytesToRead, BeginReadCallback, ctx);
+			Task<int>.Factory.FromAsync<byte[], int, int>(ctx.ConnectionContext.ClientStream.BeginRead,
+				ctx.ConnectionContext.ClientStream.EndRead, ctx.Buffer, 0, bytesToRead, ctx).ContinueWith(BeginReadCallback);			
 		}
 
-		private void BeginReadCallback(IAsyncResult result)
-		{			
-			InputStreamContext ctx = result.AsyncState as InputStreamContext;
-			int bytesRead = ctx.ConnectionContext.ClientStream.EndRead(result);			
+		private void BeginReadCallback(Task<int> task)
+		{
+			InputStreamContext ctx = task.AsyncState as InputStreamContext;
+			int bytesRead = task.Result;
 
 			if (!ctx.HeaderRead)
 			{
@@ -105,7 +109,7 @@ namespace IntegrationTests.TestClasses.Server
 				if (ctx.RemainingBytes == 0)
 					EnqueueEmptyHeader(ctx);
 				else
-					ReadChunk(ctx);				
+					ReadChunk(ctx);
 			}
 			else
 			{
@@ -115,13 +119,12 @@ namespace IntegrationTests.TestClasses.Server
 					ProcessRequest(ctx);
 				else
 					ReadChunk(ctx);
-			}		
+			}
 		}
 
-		public void BeginWriteCallback(IAsyncResult result)
+		public void BeginWriteCallback(Task task)
 		{
-			OutputStreamContext ctx = result.AsyncState as OutputStreamContext;
-			ctx.ConnectionContext.ClientStream.EndWrite(result);
+			OutputStreamContext ctx = task.AsyncState as OutputStreamContext;		
 
 			if (ctx.EmptyResponse)
 				return;
@@ -131,7 +134,8 @@ namespace IntegrationTests.TestClasses.Server
 
 			if (bytesToWrite > 0)
 			{
-				ctx.ConnectionContext.ClientStream.BeginWrite(buffer, 0, bytesToWrite, BeginWriteCallback, ctx);
+				Task.Factory.FromAsync<byte[], int, int>(ctx.ConnectionContext.ClientStream.BeginWrite,
+					ctx.ConnectionContext.ClientStream.EndWrite, buffer, 0, bytesToWrite, ctx).ContinueWith(BeginWriteCallback);				
 			}
 			else
 			{
@@ -139,9 +143,6 @@ namespace IntegrationTests.TestClasses.Server
 				ctx.WriteCompleted.Set();
 			}
 		}
+
 	}
-
-	
-
-
 }

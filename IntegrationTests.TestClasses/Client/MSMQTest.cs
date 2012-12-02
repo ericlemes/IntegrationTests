@@ -47,9 +47,7 @@ namespace IntegrationTests.TestClasses.Client
         {
             get;
             set;
-        }
-
-        private StreamUtil util = new StreamUtil();
+        }        
 
         private MessageQueue inputQueue;
 
@@ -77,7 +75,7 @@ namespace IntegrationTests.TestClasses.Client
                 Message msg = new Message();
                 msg.BodyStream = new MemoryStream();
                 
-                util.GenerateBigRequest(msg.BodyStream, false, count, count + (BatchSize - 1));
+                StreamUtil.GenerateBigRequest(msg.BodyStream, false, count, count + (BatchSize - 1));
                 msg.BodyStream.Seek(0, SeekOrigin.Begin);
                 queue.Send(msg, MessageQueueTransactionType.Single);                
 
@@ -98,7 +96,7 @@ namespace IntegrationTests.TestClasses.Client
             Log.LogMessage("Received message. Waiting for " + messageCount.ToString() + " messages");
 
             messageCount--;
-            util.ImportarStream(ConnString, e.Message.BodyStream);            
+            StreamUtil.ImportarStream(ConnString, e.Message.BodyStream);            
 
             if (messageCount <= 0)
                 finished = true;

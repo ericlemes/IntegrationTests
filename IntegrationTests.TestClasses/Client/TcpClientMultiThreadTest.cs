@@ -49,9 +49,7 @@ namespace IntegrationTests.TestClasses.Client
             set;
         }
 
-        private Queue<MemoryStream> memoryStreamQueue = new Queue<MemoryStream>();
-        
-        private StreamUtil util = new StreamUtil();        
+        private Queue<MemoryStream> memoryStreamQueue = new Queue<MemoryStream>();               
 
         public override bool Execute()
         {
@@ -74,7 +72,7 @@ namespace IntegrationTests.TestClasses.Client
 
                 MemoryStream ms = new MemoryStream();
                 
-                util.GenerateBigRequest(ms, false, count, count + (BatchSize - 1));
+                StreamUtil.GenerateBigRequest(ms, false, count, count + (BatchSize - 1));
                 ms.Seek(0, SeekOrigin.Begin);
 
                 WriteHeader(stream, ms);
@@ -118,7 +116,7 @@ namespace IntegrationTests.TestClasses.Client
                     {
                         ms = memoryStreamQueue.Dequeue();                        
                     }
-                    util.ImportarStream(ConnString, ms);                    
+                    StreamUtil.ImportarStream(ConnString, ms);                    
                 }
                 Thread.Sleep(200);
             }

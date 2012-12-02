@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Build.Utilities;
-using System.IO;
+using Microsoft.Build.Framework;
+using System.Threading;
 using System.Net.Sockets;
 using IntegrationTests.ServiceClasses;
+using System.IO;
 using System.Diagnostics;
-using System.Threading;
-using Microsoft.Build.Framework;
+using System.Threading.Tasks;
 
 namespace IntegrationTests.TestClasses.Client
 {
-	public class TcpClientMultiThreadTest2 : Task
+	public class TcpClientMultiThreadTest3 : Microsoft.Build.Utilities.Task
 	{
 
 		[Required]
@@ -72,9 +73,9 @@ namespace IntegrationTests.TestClasses.Client
 
 			Log.LogMessage("Starting TCP transfer (multi thread) with " + TotalBatches.ToString() + " batchs with " + BatchSize.ToString() + " items each");
 
-			TcpClient tcpClient = new TcpClient();
+			TcpClient tcpClient = new TcpClient();			
 			tcpClient.Connect(HostName, Port);
-			NetworkStream stream = tcpClient.GetStream();			
+			NetworkStream stream = tcpClient.GetStream();						
 
 			WriteHeader(stream);
 			ReadHeader(stream);
@@ -107,20 +108,29 @@ namespace IntegrationTests.TestClasses.Client
 				stream.Write(b, 0, sizeof(long));
 				sendDone.Set();
 				return;
-			}
-
-			Log.LogMessage("Sending request " + batchesSent.ToString());
+			}		
 
 			TcpClient2OutputStreamContext ctx = new TcpClient2OutputStreamContext();
+			contextCount++;
+			ctx.ID = contextCount;
 			ctx.OutputStream = new MemoryStream();
 			ctx.ClientStream = stream;
-			StreamUtil.GenerateBigRequest(ctx.OutputStream, false, recordCount, recordCount + (BatchSize - 1));
-			ctx.OutputStream.Seek(0, SeekOrigin.Begin);			
+						
+			lock (this)
+			{
+				Log.LogMessage("Sending request " + batchesSent.ToString() + " RecordCount " + recordCount.ToString());
+				StreamUtil.GenerateBigRequest(ctx.OutputStream, false, recordCount, recordCount + (BatchSize - 1));
+				recordCount += BatchSize;
+			}
+			
+			ctx.OutputStream.Seek(0, SeekOrigin.Begin);
 
-			byte[] header = BitConverter.GetBytes(ctx.OutputStream.Length);
+			byte[] header = new byte[sizeof(long) + sizeof(int)];
+			BitConverter.GetBytes(ctx.OutputStream.Length).CopyTo(header, 0);
+			BitConverter.GetBytes(ctx.ID).CopyTo(header, sizeof(long));
 			stream.BeginWrite(header, 0, header.Length, BeginWriteCallback, ctx);			
-
-			recordCount += BatchSize;			
+			
+			Log.LogMessage("RecordCount: " + recordCount.ToString());
 		}
 
 		private void BeginWriteCallback(IAsyncResult result)
@@ -144,14 +154,15 @@ namespace IntegrationTests.TestClasses.Client
 
 		private void ReadHeader(NetworkStream stream)
 		{
-			contextCount++;
-			TcpClient2InputStreamContext ctx = new TcpClient2InputStreamContext();
-			ctx.ID = contextCount;
-			ctx.ClientStream = stream;
-			ctx.Header = new byte[sizeof(long)];
-			ctx.HeaderRead = false;
-			
-			stream.BeginRead(ctx.Header, 0, ctx.Header.Length, BeginReadCallback, ctx);
+			lock (stream)
+			{				
+				TcpClient2InputStreamContext ctx = new TcpClient2InputStreamContext();				
+				ctx.ClientStream = stream;
+				ctx.Header = new byte[sizeof(long) + sizeof(int)];
+				ctx.HeaderRead = false;
+
+				stream.BeginRead(ctx.Header, 0, ctx.Header.Length, BeginReadCallback, ctx);
+			}
 		}
 
 		private void BeginReadCallback(IAsyncResult result)
@@ -164,8 +175,9 @@ namespace IntegrationTests.TestClasses.Client
 			{
 				Log.LogMessage("Reading Header");
 				ctx.ResponseSize = BitConverter.ToInt64(ctx.Header, 0);
+				ctx.ID = BitConverter.ToInt32(ctx.Header, sizeof(long));
 				ctx.TotalRead = 0;
-				Log.LogMessage("Response Size: " + ctx.ResponseSize.ToString());
+				Log.LogMessage("Response Size: " + ctx.ResponseSize.ToString() + ", ID: " + ctx.ID.ToString());
 				ctx.Header = null; //I don't need this buffer anymore. 
 				ctx.HeaderRead = true;
 				ctx.InputStream = new MemoryStream();
@@ -198,7 +210,9 @@ namespace IntegrationTests.TestClasses.Client
 				{
 					Log.LogMessage("Finished reading " + ctx.InputStream.Length.ToString() + " bytes");
 					lock (inputQueue)
-						inputQueue.Enqueue(ctx);					
+					{
+						inputQueue.Enqueue(ctx);																		
+					}
 
 					ReadHeader(ctx.ClientStream);
 				}
@@ -213,7 +227,7 @@ namespace IntegrationTests.TestClasses.Client
 				lock (inputQueue)
 				{
 					if (inputQueue.Count > 0)
-						ctx = inputQueue.Dequeue();
+						ctx = inputQueue.Dequeue();					
 				}
 
 				if (ctx == null)
@@ -222,89 +236,24 @@ namespace IntegrationTests.TestClasses.Client
 					continue;
 				}
 
-				ctx.InputStream.Seek(0, SeekOrigin.Begin);
-				Log.LogMessage("Before import stream " + ctx.ID.ToString());
-				StreamUtil.ImportarStream(ConnString, ctx.InputStream);
-				Log.LogMessage("Stream imported " + ctx.ID.ToString());
+				Parallel.Invoke(() =>
+				{
+					Stream inputStream = ctx.InputStream;
+					ctx.InputStream = null;
+					inputStream.Seek(0, SeekOrigin.Begin);
+					Log.LogMessage("Before import stream " + ctx.ID.ToString());
+					StreamUtil.ImportarStream(ConnString, inputStream, Log);
+					Log.LogMessage("Stream imported " + ctx.ID.ToString());
+					responsesProcessed++;
+				});
 
-				responsesProcessed++;
 				if (responsesProcessed == TotalBatches)
 					break;
+				
 			}
 
 			processingDone.Set();
 		}
 	}
 
-	internal class TcpClient2InputStreamContext
-	{
-		public int ID
-		{
-			get;
-			set;
-		}
-
-		public NetworkStream ClientStream
-		{
-			get;
-			set;
-		}
-
-		public byte[] Header
-		{
-			get;
-			set;
-		}
-
-		public byte[] Buffer
-		{
-			get;
-			set;
-		}
-
-		public long ResponseSize
-		{
-			get;
-			set;
-		}
-
-		public MemoryStream InputStream
-		{
-			get;
-			set;
-		}
-
-		public bool HeaderRead
-		{
-			get;
-			set;
-		}
-
-		public long TotalRead
-		{
-			get;
-			set;
-		}		
-	}
-
-	internal class TcpClient2OutputStreamContext
-	{
-		public int ID
-		{
-			get;
-			set;
-		}
-
-		public MemoryStream OutputStream
-		{
-			get;
-			set;
-		}
-
-		public NetworkStream ClientStream
-		{
-			get;
-			set;
-		}
-	}
 }

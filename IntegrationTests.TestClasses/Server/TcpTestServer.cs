@@ -42,9 +42,7 @@ namespace IntegrationTests.TestClasses.Server
         }
 
         private void BeginAcceptSocketCallback(IAsyncResult result)
-        {
-            StreamUtil u = new StreamUtil();
-
+        {            
             TcpListener tcpListener = (TcpListener)result.AsyncState;
             TcpClient tcpClient = tcpListener.EndAcceptTcpClient(result);
             
@@ -66,7 +64,7 @@ namespace IntegrationTests.TestClasses.Server
                 MemoryStream ms = ReadBatch(clientStream, size);
 
                 if (ms.Length > 0)               
-                    WriteOutput(ms, u, clientStream);                                    
+                    WriteOutput(ms, clientStream);                                    
                 else               
                     headerBytes = 0;                
             }
@@ -95,13 +93,13 @@ namespace IntegrationTests.TestClasses.Server
             return ms;
         }
 
-        private void WriteOutput(MemoryStream ms, StreamUtil u, Stream clientStream)
+        private void WriteOutput(MemoryStream ms, Stream clientStream)
         {
             byte[] header = new byte[sizeof(Int64)];
 
             ms.Seek(0, SeekOrigin.Begin);
             MemoryStream outputStream = new MemoryStream();
-            u.ProcessClientBigRequest(ConnString, ms, outputStream, false, null);
+            StreamUtil.ProcessClientBigRequest(ConnString, ms, outputStream, false, null);
             outputStream.Seek(0, SeekOrigin.Begin);
             header = BitConverter.GetBytes(outputStream.Length);
             clientStream.Write(header, 0, header.Length);
