@@ -16,10 +16,18 @@
 		<BatchSize>1000</BatchSize>
 		<Flush>true</Flush>
 		<MSBuildExecutable>C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe</MSBuildExecutable>
-		<MSMQServerInputQueueName>.\private$\integrationtests.out</MSMQServerInputQueueName>
-		<MSMQServerOutputQueueName>.\private$\integrationtests.in</MSMQServerOutputQueueName>
-		<MSMQClientInputQueueName>FormatName:Direct=TCP:192.168.2.5\private$\integrationtests.out</MSMQClientInputQueueName>
-		<MSMQClientOutputQueueName>FormatName:Direct=TCP:192.168.2.5\private$\integrationtests.in</MSMQClientOutputQueueName>
+		<MSMQServerInputQueueName>.\private$\integrationtests.in</MSMQServerInputQueueName>
+		<MSMQServerOutputQueueName>.\private$\integrationtests.out</MSMQServerOutputQueueName>
+		<MSMQServerTransactionalInputQueueName>.\private$\integrationtests.trans.in</MSMQServerTransactionalInputQueueName>
+		<MSMQServerTransactionalOutputQueueName>.\private$\integrationtests.trans.out</MSMQServerTransactionalOutputQueueName>		
+		<!-- MSMQClientInputQueueName>.\private$\integrationtests.out</MSMQClientInputQueueName>
+		<MSMQClientOutputQueueName>.\private$\integrationtests.in</MSMQClientOutputQueueName>
+		<MSMQClientTransactionalInputQueueName>.\private$\integrationtests.trans.out</MSMQClientTransactionalInputQueueName>
+		<MSMQClientTransactionalOutputQueueName>.\private$\integrationtests.trans.in</MSMQClientTransactionalOutputQueueName -->		
+		<MSMQClientInputQueueName>FormatName:Direct=TCP:192.168.2.7\private$\integrationtests.out</MSMQClientInputQueueName>
+		<MSMQClientOutputQueueName>FormatName:DIRECT=TCP:192.168.2.7\private$\integrationtests.in</MSMQClientOutputQueueName>
+		<MSMQClientTransactionalInputQueueName>FormatName:Direct=TCP:192.168.2.7\private$\integrationtests.trans.out</MSMQClientTransactionalInputQueueName>
+		<MSMQClientTransactionalOutputQueueName>FormatName:DIRECT=TCP:192.168.2.7\private$\integrationtests.trans.in</MSMQClientTransactionalOutputQueueName>
 		<WebsphereMQServerQueueManager>miles</WebsphereMQServerQueueManager>
 		<WebsphereMQServerInputQueueName>pocbatch.out</WebsphereMQServerInputQueueName>
 		<WebsphereMQServerOutputQueueName>pocbatch.in</WebsphereMQServerOutputQueueName>
@@ -167,8 +175,13 @@
 	
 	<Target Name="MSMQTest">
 		<EmptyClientTable ConnString="$(ConnString)" />
-		<MSMQTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" InputQueueName="$(MSMQClientInputQueueName)" OutputQueueName="$(MSMQClientOutputQueueName)"/>
+		<MSMQTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" InputQueueName="$(MSMQClientInputQueueName)" OutputQueueName="$(MSMQClientOutputQueueName)" IsTransactional="false" />
 	</Target>
+	
+	<Target Name="MSMQTransactionalTest">
+		<EmptyClientTable ConnString="$(ConnString)" />
+		<MSMQTest ConnString="$(ConnString)" TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" InputQueueName="$(MSMQClientTransactionalInputQueueName)" OutputQueueName="$(MSMQClientTransactionalOutputQueueName)" IsTransactional="true" />
+	</Target>	
 	
 	<Target Name="WebsphereMQTest">
 		<EmptyClientTable ConnString="$(ConnString)" />
@@ -185,9 +198,10 @@
 		<CallTarget Targets="HttpRequest" /-->
 		<!-- CallTarget Targets="TcpClientSingleThreadTest" / --> 
 		<!-- CallTarget Targets="TcpClientMultiThreadTest" / -->		
-		<!-- CallTarget Targets="WebsphereMQTest" />
-		<CallTarget Targets="MSMQTest" /-->
-		<CallTarget Targets="TcpClientMultiThreadTest2" />
+		<!-- CallTarget Targets="WebsphereMQTest" /-->
+		<!-- CallTarget Targets="MSMQTest" / -->
+		<CallTarget Targets="MSMQTransactionalTest" />
+		<!-- CallTarget Targets="TcpClientMultiThreadTest2" / -->
 		<!-- CallTarget Targets="TcpClientMultiThreadTest3" / -->
 		<!-- CallTarget Targets="TcpClientMultiThreadTest4" / -->
 	</Target>
@@ -254,8 +268,14 @@
 	</Target>		
 	
 	<Target Name="MSMQTestServer">
-		<MSMQTestServer ConnString="$(ConnString)" InputQueueName="$(MSMQServerInputQueueName)" OutputQueueName="$(MSMQServerOutputQueueName)" />
+		<MSMQTestServer ConnString="$(ConnString)" InputQueueName="$(MSMQServerInputQueueName)" OutputQueueName="$(MSMQServerOutputQueueName)" 
+			IsTransactional="false" />
 	</Target>
+	
+	<Target Name="MSMQTransactionalTestServer">
+		<MSMQTestServer ConnString="$(ConnString)" InputQueueName="$(MSMQServerTransactionalInputQueueName)" 
+			OutputQueueName="$(MSMQServerTransactionalOutputQueueName)" IsTransactional="true" />
+	</Target>	
 	
 	<Target Name="WebsphereMQTestServer">
 		<WebsphereMQServerTest ConnString="$(ConnString)" QueueManagerName="$(WebsphereMQServerQueueManager)" InputQueueName="$(WebsphereMQServerInputQueueName)" OutputQueueName="$(WebsphereMQServerOutputQueueName)" />
