@@ -42,9 +42,10 @@ namespace IntegrationTests.TestClasses.WebsphereMQ.Server
 
         public override bool Execute()
         {
-            Log.LogMessage("Starting Websphere MQ Server");
-
+            Log.LogMessage("Starting Websphere MQ Server " + QueueManagerName);
+						
             IBM.WMQ.MQQueueManager queueManager = new IBM.WMQ.MQQueueManager(QueueManagerName);
+						Log.LogMessage("Opening queue " + InputQueueName);
             IBM.WMQ.MQQueue queue = queueManager.AccessQueue(InputQueueName, IBM.WMQ.MQC.MQOO_INPUT_SHARED);
             
             int count = 0;
@@ -53,7 +54,7 @@ namespace IntegrationTests.TestClasses.WebsphereMQ.Server
             {
                 try
                 {
-                    IBM.WMQ.MQMessage msg = new IBM.WMQ.MQMessage();
+                    IBM.WMQ.MQMessage msg = new IBM.WMQ.MQMessage();										
                     queue.Get(msg);
 
                     MemoryStream ms = new MemoryStream();
@@ -64,8 +65,8 @@ namespace IntegrationTests.TestClasses.WebsphereMQ.Server
 
                     StreamUtil.ProcessClientBigRequest(ConnString, ms, respStream, false, null);
 
-                    MQUtil.StreamToMQMessage(respStream, msg);
-                    queueManager.Put(OutputQueueName, msg);
+                    MQUtil.StreamToMQMessage(respStream, msg);										
+                    queueManager.Put(OutputQueueName, msg);										
                     queueManager.Commit();
 
                     msg.ClearMessage();

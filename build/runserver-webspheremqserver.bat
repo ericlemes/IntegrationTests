@@ -1,2 +1,2 @@
-C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe IntegrationTests.build /t:WebsphereMQTestServer
+C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe IntegrationTests.build /t:WebsphereMQTestServer /p:ConnString="server=localhost\SQLExpress;Initial Catalog=IntegrationTests;user=sa;pwd=123456" 
 pause

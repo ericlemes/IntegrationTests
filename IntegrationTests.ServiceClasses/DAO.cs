@@ -83,10 +83,11 @@ namespace IntegrationTests.ServiceClasses
 		{
 			ServiceTable result = new ServiceTable();
 
-			SqlConnection conn = new SqlConnection(ConnString);
+			SqlConnection conn = new SqlConnection(ConnString);		
 			conn.Open();
 
 			SqlCommand cmd = new SqlCommand("delete from ClientTable", conn);
+			cmd.CommandTimeout = 180;
 
 			using (conn)
 				cmd.ExecuteNonQuery();

@@ -37,9 +37,11 @@ namespace IntegrationTests.TestClasses.Server
 
         public override bool Execute()       
         {
+					Log.LogMessage("Watching dir " + InputDir);
             FileSystemWatcher watcher = new FileSystemWatcher(InputDir);
             watcher.Created += new FileSystemEventHandler(watcher_Created);
             watcher.EnableRaisingEvents = true;
+						Log.LogMessage("Watch sucessfull");
 
             while (true)
                 Thread.Sleep(250);            

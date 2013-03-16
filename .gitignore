@@ -7,3 +7,6 @@
 /IntegrationTests.WebApp/bin
 *.suo
 /build/IntegrationTests-results.xlsx
+/IntegrationTests.TestClasses.RabbitMQ/*.user
+/IntegrationTests.TestClasses.RabbitMQ/bin
+/IntegrationTests.TestClasses.RabbitMQ/obj
