@@ -5,13 +5,13 @@
 		<TestClassesAssembly>$(MSBuildProjectDirectory)\..\IntegrationTests.TestClasses\bin\$(Config)\IntegrationTests.TestClasses.dll</TestClassesAssembly>
 		<TestClassesAssemblyWebsphereMQ>$(MSBuildProjectDirectory)\..\IntegrationTests.TestClasses.WebsphereMQ\bin\$(Config)\IntegrationTests.TestClasses.WebsphereMQ.dll</TestClassesAssemblyWebsphereMQ>
 		<TestClassesAssemblyRabbitMQ>$(MSBuildProjectDirectory)\..\IntegrationTests.TestClasses.RabbitMQ\bin\$(Config)\IntegrationTests.TestClasses.RabbitMQ.dll</TestClassesAssemblyRabbitMQ>
-		<ConnString>server=localhost\SQLEXPRESS;Initial Catalog=PoCProcessamentoBatch;user=sa;pwd=123456</ConnString>
+		<ConnString>server=localhost;Initial Catalog=IntegrationTests;user=sa;pwd=123456abc@</ConnString>
 		<InputDir>C:\Shared</InputDir>
 		<OutputDir>Z:\</OutputDir>
 		<BigRequestSize>10000</BigRequestSize>		
-		<WebServiceUri>http://192.168.2.7/integrationtests/IntegrationTestsService.svc</WebServiceUri>		
-		<NetTcpUri>net.tcp://192.168.2.7/integrationtests/IntegrationTestsService.svc</NetTcpUri>		
-		<WebAppUri>http://192.168.2.7/integrationtests2/GenericHandler.ashx</WebAppUri>		
+		<WebServiceUri>http://localhost/integrationtests/IntegrationTestsService.svc</WebServiceUri>		
+		<NetTcpUri>net.tcp://localhost/integrationtests/IntegrationTestsService.svc</NetTcpUri>		
+		<WebAppUri>http://localhost/integrationtests2/GenericHandler.ashx</WebAppUri>		
 		<!-- WebAppUri>http://localhost:64457/GenericHandler.ashx</WebAppUri -->		
 		<TotalBatches>20</TotalBatches>
 		<Iteration>1</Iteration>
@@ -26,10 +26,10 @@
 		<MSMQClientOutputQueueName>.\private$\integrationtests.in</MSMQClientOutputQueueName>
 		<MSMQClientTransactionalInputQueueName>.\private$\integrationtests.trans.out</MSMQClientTransactionalInputQueueName>
 		<MSMQClientTransactionalOutputQueueName>.\private$\integrationtests.trans.in</MSMQClientTransactionalOutputQueueName -->		
-		<MSMQClientInputQueueName>FormatName:Direct=TCP:192.168.2.7\private$\integrationtests.out</MSMQClientInputQueueName>
-		<MSMQClientOutputQueueName>FormatName:DIRECT=TCP:192.168.2.7\private$\integrationtests.in</MSMQClientOutputQueueName>
-		<MSMQClientTransactionalInputQueueName>FormatName:Direct=TCP:192.168.2.7\private$\integrationtests.trans.out</MSMQClientTransactionalInputQueueName>
-		<MSMQClientTransactionalOutputQueueName>FormatName:DIRECT=TCP:192.168.2.7\private$\integrationtests.trans.in</MSMQClientTransactionalOutputQueueName>
+		<MSMQClientInputQueueName>FormatName:Direct=TCP:localhost\private$\integrationtests.out</MSMQClientInputQueueName>
+		<MSMQClientOutputQueueName>FormatName:DIRECT=TCP:locahost\private$\integrationtests.in</MSMQClientOutputQueueName>
+		<MSMQClientTransactionalInputQueueName>FormatName:Direct=TCP:localhost\private$\integrationtests.trans.out</MSMQClientTransactionalInputQueueName>
+		<MSMQClientTransactionalOutputQueueName>FormatName:DIRECT=TCP:localhost\private$\integrationtests.trans.in</MSMQClientTransactionalOutputQueueName>
 		<WebsphereMQServerQueueManager>miles</WebsphereMQServerQueueManager>
 		<WebsphereMQServerInputQueueName>RECVQ</WebsphereMQServerInputQueueName>
 		<WebsphereMQServerOutputQueueName>SENDQ</WebsphereMQServerOutputQueueName>
@@ -206,11 +206,11 @@
 		<Message Text="Running iteration $(Iteration)" />
 		<!-- CallTarget Targets="SoapSmallRequests" />		
 		<CallTarget Targets="NetTcpSmallRequests" / -->
-		<CallTarget Targets="FileTransferRequest" />		
-		<CallTarget Targets="FileTransferBigRequest" />				
-		<!-- CallTarget Targets="SoapSmallBatches" />		
-		<CallTarget Targets="NetTcpSmallBatches" /-->			
-		<!-- CallTarget Targets="HttpRequest" / -->
+		<!-- CallTarget Targets="FileTransferRequest" />		
+		<CallTarget Targets="FileTransferBigRequest" / -->				
+		<CallTarget Targets="SoapSmallBatches" />		
+		<CallTarget Targets="NetTcpSmallBatches" />			
+		<CallTarget Targets="HttpRequest" />
 		<!-- CallTarget Targets="TcpClientSingleThreadTest" /> 
 		<CallTarget Targets="TcpClientMultiThreadTest" / -->		
 		<!-- CallTarget Targets="WebsphereMQTest" / -->
