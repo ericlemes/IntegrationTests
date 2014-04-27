@@ -58,6 +58,7 @@
     <Compile Include="Client\TcpClientMultiThreadTest3.cs" />
     <Compile Include="Client\TcpClientMultiThreadTest4.cs" />
     <Compile Include="Client\TcpClientSingleThreadTest.cs" />
+    <Compile Include="Client\WCFSmallBatchesAsyncTest.cs" />
     <Compile Include="Client\WCFSmallBatchesTest.cs" />
     <Compile Include="Client\WCFSmallRequestsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -100,16 +101,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Properties\DataSources\IntegrationTests.ServiceClasses.Domain.ServiceTable.datasource" />
-    <None Include="Service References\IntegrationTestsService\IntegrationTestsService.wsdl" />
-    <None Include="Service References\IntegrationTestsService\IntegrationTestsService.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\IntegrationTestsService\IntegrationTestsService1.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\IntegrationTestsService\IntegrationTestsService2.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadataStorage Include="Service References\IntegrationTestsService\" />
@@ -121,6 +112,16 @@
     <None Include="Service References\IntegrationTestsService\configuration.svcinfo" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Service References\IntegrationTestsService\IntegrationTestsService1.wsdl" />
+    <None Include="Service References\IntegrationTestsService\IntegrationTestsService3.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\IntegrationTestsService\IntegrationTestsService31.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\IntegrationTestsService\IntegrationTestsService32.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Service References\IntegrationTestsService\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>

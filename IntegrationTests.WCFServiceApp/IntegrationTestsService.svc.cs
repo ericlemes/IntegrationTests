@@ -8,6 +8,7 @@ using System.Text;
 using IntegrationTests.ServiceClasses.Domain;
 using IntegrationTests.ServiceClasses;
 using System.Configuration;
+using System.Threading.Tasks;
 
 namespace IntegrationTests.WCFServiceApp
 {
@@ -20,7 +21,7 @@ namespace IntegrationTests.WCFServiceApp
 
             connString = System.Configuration.ConfigurationManager.AppSettings["ConnString"];
         }
-        
+
         public ServiceTable GetServiceTable(int ServiceTableID)
         {
             if (String.IsNullOrEmpty(connString))
@@ -36,6 +37,24 @@ namespace IntegrationTests.WCFServiceApp
             for (int i = IDInicial; i <= IDFinal; i++)
             {
                 l.Add(DAO.GetServiceTable(connString, i));
+            }
+            return l;
+        }
+
+        public List<ServiceTable> GetServiceTablesAsynchronous(int IDInicial, int IDFinal)
+        {
+            if (String.IsNullOrEmpty(connString))
+                GetConnString();
+            List<ServiceTable> l = new List<ServiceTable>();
+            Queue<Task<ServiceTable>> queue = new Queue<Task<ServiceTable>>();
+            for (int i = IDInicial; i <= IDFinal; i++)
+                queue.Enqueue(DAO.GetServiceTableAsync(connString, i));
+
+            while (queue.Count > 0)
+            {
+                Task<ServiceTable> task = queue.Dequeue();
+                task.Wait();
+                l.Add(task.Result);
             }
             return l;
         }

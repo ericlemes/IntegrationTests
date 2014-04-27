@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="http://tempuri.org/" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="IntegrationTestsService" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsp:Policy wsu:Id="nettcp1_policy">
+    <wsp:ExactlyOne>
+      <wsp:All>
+        <msb:BinaryEncoding xmlns:msb="http://schemas.microsoft.com/ws/06/2004/mspolicy/netbinary1" />
+        <wsaw:UsingAddressing />
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://tempuri.org/Imports">
+      <xsd:import schemaLocation="http://192.168.2.12/integrationtests/IntegrationTestsService.svc?xsd=xsd0" namespace="http://tempuri.org/" />
+      <xsd:import schemaLocation="http://192.168.2.12/integrationtests/IntegrationTestsService.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+      <xsd:import schemaLocation="http://192.168.2.12/integrationtests/IntegrationTestsService.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/IntegrationTests.ServiceClasses.Domain" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IIntegrationTestsService_GetServiceTable_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceTable" />
+  </wsdl:message>
+  <wsdl:message name="IIntegrationTestsService_GetServiceTable_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceTableResponse" />
+  </wsdl:message>
+  <wsdl:message name="IIntegrationTestsService_GetServiceTables_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceTables" />
+  </wsdl:message>
+  <wsdl:message name="IIntegrationTestsService_GetServiceTables_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceTablesResponse" />
+  </wsdl:message>
+  <wsdl:message name="IIntegrationTestsService_GetServiceTablesAsynchronous_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceTablesAsynchronous" />
+  </wsdl:message>
+  <wsdl:message name="IIntegrationTestsService_GetServiceTablesAsynchronous_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetServiceTablesAsynchronousResponse" />
+  </wsdl:message>
+  <wsdl:portType name="IIntegrationTestsService">
+    <wsdl:operation name="GetServiceTable">
+      <wsdl:input wsaw:Action="http://tempuri.org/IIntegrationTestsService/GetServiceTable" message="tns:IIntegrationTestsService_GetServiceTable_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IIntegrationTestsService/GetServiceTableResponse" message="tns:IIntegrationTestsService_GetServiceTable_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceTables">
+      <wsdl:input wsaw:Action="http://tempuri.org/IIntegrationTestsService/GetServiceTables" message="tns:IIntegrationTestsService_GetServiceTables_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IIntegrationTestsService/GetServiceTablesResponse" message="tns:IIntegrationTestsService_GetServiceTables_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceTablesAsynchronous">
+      <wsdl:input wsaw:Action="http://tempuri.org/IIntegrationTestsService/GetServiceTablesAsynchronous" message="tns:IIntegrationTestsService_GetServiceTablesAsynchronous_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IIntegrationTestsService/GetServiceTablesAsynchronousResponse" message="tns:IIntegrationTestsService_GetServiceTablesAsynchronous_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="nettcp1" type="tns:IIntegrationTestsService">
+    <wsp:PolicyReference URI="#nettcp1_policy" />
+    <soap12:binding transport="http://schemas.microsoft.com/soap/tcp" />
+    <wsdl:operation name="GetServiceTable">
+      <soap12:operation soapAction="http://tempuri.org/IIntegrationTestsService/GetServiceTable" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceTables">
+      <soap12:operation soapAction="http://tempuri.org/IIntegrationTestsService/GetServiceTables" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceTablesAsynchronous">
+      <soap12:operation soapAction="http://tempuri.org/IIntegrationTestsService/GetServiceTablesAsynchronous" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="basicHTTP" type="tns:IIntegrationTestsService">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetServiceTable">
+      <soap:operation soapAction="http://tempuri.org/IIntegrationTestsService/GetServiceTable" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceTables">
+      <soap:operation soapAction="http://tempuri.org/IIntegrationTestsService/GetServiceTables" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServiceTablesAsynchronous">
+      <soap:operation soapAction="http://tempuri.org/IIntegrationTestsService/GetServiceTablesAsynchronous" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="IntegrationTestsService">
+    <wsdl:port name="nettcp1" binding="tns:nettcp1">
+      <soap12:address location="net.tcp://miles-davis-pc/integrationtests/IntegrationTestsService.svc" />
+      <wsa10:EndpointReference>
+        <wsa10:Address>net.tcp://miles-davis-pc/integrationtests/IntegrationTestsService.svc</wsa10:Address>
+      </wsa10:EndpointReference>
+    </wsdl:port>
+    <wsdl:port name="basicHTTP" binding="tns:basicHTTP">
+      <soap:address location="http://192.168.2.12/integrationtests/IntegrationTestsService.svc" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

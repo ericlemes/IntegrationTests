@@ -55,7 +55,7 @@ namespace IntegrationTests.TestClasses.Client
 
             if (this.EndpointType == "http")
             {
-                binding = new BasicHttpBinding();
+                binding = new BasicHttpBinding();                
                 ((BasicHttpBinding)binding).MaxReceivedMessageSize = 2048 * 1024;
             }
             else if (this.EndpointType == "nettcp")

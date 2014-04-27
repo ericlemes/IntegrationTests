@@ -9,11 +9,11 @@
 		<InputDir>C:\Shared</InputDir>
 		<OutputDir>Z:\</OutputDir>
 		<BigRequestSize>10000</BigRequestSize>		
-		<WebServiceUri>http://localhost/integrationtests/IntegrationTestsService.svc</WebServiceUri>		
+		<WebServiceUri>http://192.168.2.12/integrationtests/IntegrationTestsService.svc</WebServiceUri>		
 		<NetTcpUri>net.tcp://localhost/integrationtests/IntegrationTestsService.svc</NetTcpUri>		
 		<WebAppUri>http://localhost/integrationtests2/GenericHandler.ashx</WebAppUri>		
 		<!-- WebAppUri>http://localhost:64457/GenericHandler.ashx</WebAppUri -->		
-		<TotalBatches>20</TotalBatches>
+		<TotalBatches>500</TotalBatches>
 		<Iteration>1</Iteration>
 		<BatchSize>1000</BatchSize>
 		<Flush>true</Flush>
@@ -36,7 +36,7 @@
 		<WebsphereMQClientQueueManager>miles2</WebsphereMQClientQueueManager>
 		<WebsphereMQClientInputQueueName>RECVQ</WebsphereMQClientInputQueueName>
 		<WebsphereMQClientOutputQueueName>SENDQ</WebsphereMQClientOutputQueueName>
-		<TcpServerHostName>192.168.2.7</TcpServerHostName>
+		<TcpServerHostName>192.168.2.12</TcpServerHostName>
 		<!-- TcpServerHostName>127.0.0.1</TcpServerHostName -->		
 		<RabbitMQClientInputQueueName>integrationtests.out</RabbitMQClientInputQueueName>
 		<RabbitMQClientOutputQueueName>integrationtests.in</RabbitMQClientOutputQueueName>		
@@ -85,6 +85,7 @@
 	<UsingTask TaskName="FileTransferTestServer" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="WCFSmallRequestsTest" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="WCFSmallBatchesTest" AssemblyFile="$(TestClassesAssembly)" />	
+	<UsingTask TaskName="WCFSmallBatchesAsyncTest" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="HTTPRequestTest" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="TcpTestServer" AssemblyFile="$(TestClassesAssembly)" />	
 	<UsingTask TaskName="TcpTestServer2" AssemblyFile="$(TestClassesAssembly)" />	
@@ -147,10 +148,20 @@
 		<WCFSmallBatchesTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(WebServiceUri)" EndpointType="http" />
 	</Target>					
 	
+	<Target Name="SoapSmallBatchesAsync">		
+		<EmptyClientTable ConnString="$(ConnString)" />				
+		<WCFSmallBatchesAsyncTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(WebServiceUri)" EndpointType="http" />
+	</Target>						
+	
 	<Target Name="NetTcpSmallBatches">		
 		<EmptyClientTable ConnString="$(ConnString)" />						
 		<WCFSmallBatchesTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(NetTcpUri)" EndpointType="nettcp" />
 	</Target>						
+	
+	<Target Name="NetTcpSmallBatchesAsync">		
+		<EmptyClientTable ConnString="$(ConnString)" />						
+		<WCFSmallBatchesAsyncTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(NetTcpUri)" EndpointType="nettcp" />
+	</Target>							
 	
 	<Target Name="HttpRequest">
 		<EmptyClientTable ConnString="$(ConnString)" />						
@@ -208,16 +219,18 @@
 		<CallTarget Targets="NetTcpSmallRequests" / -->
 		<!-- CallTarget Targets="FileTransferRequest" />		
 		<CallTarget Targets="FileTransferBigRequest" / -->				
-		<CallTarget Targets="SoapSmallBatches" />		
-		<CallTarget Targets="NetTcpSmallBatches" />			
-		<CallTarget Targets="HttpRequest" />
+		<!-- CallTarget Targets="SoapSmallBatches" / -->		
+		<!-- CallTarget Targets="SoapSmallBatchesAsync" / -->		
+		<!--CallTarget Targets="HttpRequest" / -->		
+		<!-- CallTarget Targets="NetTcpSmallBatches" / -->			
+		<!-- CallTarget Targets="NetTcpSmallBatchesAsync" / -->			
 		<!-- CallTarget Targets="TcpClientSingleThreadTest" /> 
 		<CallTarget Targets="TcpClientMultiThreadTest" / -->		
 		<!-- CallTarget Targets="WebsphereMQTest" / -->
 		<!-- CallTarget Targets="MSMQTest" />
 		<CallTarget Targets="MSMQTransactionalTest" / -->
 		<!-- CallTarget Targets="TcpClientMultiThreadTest2" / -->
-		<!-- CallTarget Targets="TcpClientMultiThreadTest4" / -->
+		<CallTarget Targets="TcpClientMultiThreadTest4" />
 		<!-- CallTarget Targets="TcpClientMultiThreadTest" / -->
 		<!-- CallTarget Targets="RabbitMQTest" / -->
 	</Target>
@@ -253,9 +266,9 @@
 
 	<Target Name="RunAllTests" Inputs="%(Iteration.Id)" Outputs="%(Iteration.Id)a">				
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20;Id=%(Iteration.Id)" />			
-		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50;Id=%(Iteration.Id)" />
+		<!-- MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50;Id=%(Iteration.Id)" />
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=500000;TotalBatches=500;Id=%(Iteration.Id)" />		
-		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000;Id=%(Iteration.Id)" />		
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000;Id=%(Iteration.Id)" / -->		
 		
 		<!-- MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20" />			
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50" />

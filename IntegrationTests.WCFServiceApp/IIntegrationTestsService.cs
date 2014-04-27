@@ -16,7 +16,10 @@ namespace IntegrationTests.WCFServiceApp
         ServiceTable GetServiceTable(int ServiceTableID);
 
         [OperationContract]
-        List<ServiceTable> GetServiceTables(int IDInicial, int IDFinal);      
+        List<ServiceTable> GetServiceTables(int IDInicial, int IDFinal);
+
+        [OperationContract]
+        List<ServiceTable> GetServiceTablesAsynchronous(int IDInicial, int IDFinal);      
     }
     
 }

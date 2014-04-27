@@ -30,8 +30,8 @@ namespace IntegrationTests.ServiceClasses
 
 			bool first = true;
 
-			using (xr)
-			{
+			//using (xr)
+			//{
 				xr.Read();
 				xr.Read();
 				xr.ReadStartElement("request");
@@ -59,7 +59,8 @@ namespace IntegrationTests.ServiceClasses
 				}
 				xr.ReadEndElement();
 
-			}
+			//}
+                xr.Dispose();
 			xw.WriteEndElement();
 			xw.Flush();
 
