@@ -102,9 +102,17 @@ namespace IntegrationTests.TestClasses.Server
 
 			if (!ctx.HeaderRead)
 			{
-				readCount++;
-				Log.LogMessage("Reading " + readCount.ToString());
+				readCount++;                
 				ctx.ProcessHeaderAfterRead();
+                if (ctx.RemainingBytes > 20000)
+                {
+                    Log.LogMessage("Corrupt Header. String Representation: " + Encoding.UTF8.GetString(ctx.Header) + " Long Representation: " + ctx.RemainingBytes.ToString());
+                    foreach (byte b in ctx.Header)
+                        Log.LogMessage(b.ToString());
+                    throw new Exception("Corrupt header.");
+                }
+                
+                Log.LogMessage("Reading ID: " + readCount.ToString() + " Bytes read: " + bytesRead + " Remaining bytes: " + ctx.RemainingBytes.ToString());
 
 				if (ctx.RemainingBytes == 0)
 					EnqueueEmptyHeader(ctx);
@@ -114,6 +122,7 @@ namespace IntegrationTests.TestClasses.Server
 			else
 			{
 				ctx.ProcessChunkAfterRead(bytesRead);
+                Log.LogMessage("Chunk received: " + bytesRead.ToString() + " bytes read. Remaining: " + ctx.RemainingBytes.ToString());
 
 				if (ctx.RemainingBytes == 0)
 					ProcessRequest(ctx);
@@ -138,8 +147,7 @@ namespace IntegrationTests.TestClasses.Server
 					ctx.ConnectionContext.ClientStream.EndWrite, buffer, 0, bytesToWrite, ctx).ContinueWith(BeginWriteCallback);				
 			}
 			else
-			{
-				Log.LogMessage("Finished writing ");
+			{				
 				ctx.WriteCompleted.Set();
 			}
 		}

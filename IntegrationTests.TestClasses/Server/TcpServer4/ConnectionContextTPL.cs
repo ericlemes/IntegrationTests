@@ -68,9 +68,13 @@ namespace IntegrationTests.TestClasses.Server.TcpServer4
 					continue;
 				}
 
+                processCount++;
+                
+
 				OutputStreamContext outputContext = new OutputStreamContext(this);
 				if (ctx.EmptyResponse)
 				{
+                    log.LogMessage("Processing " + processCount.ToString() + " empty response.");
 					outputContext.EmptyResponse = true;
 					byte[] buffer = BitConverter.GetBytes((long)0);
 					System.Threading.Tasks.Task.Factory.FromAsync<byte[], int, int>(ClientStream.BeginWrite, ClientStream.EndWrite,
@@ -78,6 +82,8 @@ namespace IntegrationTests.TestClasses.Server.TcpServer4
 				}
 				else
 				{
+                    log.LogMessage("Processing " + processCount.ToString() + " NON empty response.");
+
 					ctx.RequestStream.Seek(0, SeekOrigin.Begin);
 					try
 					{
@@ -116,5 +122,7 @@ namespace IntegrationTests.TestClasses.Server.TcpServer4
 			inputQueueThread = new Thread(ProcessInputQueue);
 			inputQueueThread.Start();
 		}
-	}
+
+        public int processCount { get; set; }
+    }
 }

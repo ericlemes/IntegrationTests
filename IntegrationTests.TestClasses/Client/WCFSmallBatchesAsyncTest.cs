@@ -75,10 +75,10 @@ namespace IntegrationTests.TestClasses.Client
                 binding = new NetTcpBinding();
                 ((NetTcpBinding)binding).MaxReceivedMessageSize = 1024 * 1024;
                 ((NetTcpBinding)binding).Security.Mode = SecurityMode.None;
-                ((NetTcpBinding)binding).CloseTimeout = new TimeSpan(0, 0, 10);
-                ((NetTcpBinding)binding).OpenTimeout = new TimeSpan(0, 0, 10);
-                ((NetTcpBinding)binding).ReceiveTimeout = new TimeSpan(0, 0, 10);
-                ((NetTcpBinding)binding).SendTimeout = new TimeSpan(0, 0, 10);
+                ((NetTcpBinding)binding).CloseTimeout = new TimeSpan(0, 50, 10);
+                ((NetTcpBinding)binding).OpenTimeout = new TimeSpan(0, 50, 10);
+                ((NetTcpBinding)binding).ReceiveTimeout = new TimeSpan(0, 50, 10);
+                ((NetTcpBinding)binding).SendTimeout = new TimeSpan(0, 50, 10);
             }
             else
                 throw new ArgumentException("Invalid value for EndpointType. Expected: http, nettcp");

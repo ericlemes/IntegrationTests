@@ -54,7 +54,7 @@ namespace IntegrationTests.TestClasses.Server.TcpServer4
 		public void ProcessHeaderAfterRead()
 		{
 			this.headerRead = true;
-			this.remainingBytes = BitConverter.ToInt64(this.Header, 0);
+			this.remainingBytes = BitConverter.ToInt64(this.Header, 0);            
 		}
 
 		public void ProcessChunkAfterRead(int bytesRead)

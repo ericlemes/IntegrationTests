@@ -122,6 +122,7 @@ namespace IntegrationTests.TestClasses.Client
 			ctx.OutputStream.Seek(0, SeekOrigin.Begin);								
 
 			byte[] header = BitConverter.GetBytes(ctx.OutputStream.Length);
+            Log.LogMessage("Sending header: " + ctx.OutputStream.Length.ToString() + " header length: " + header.Length.ToString());
 
 			Task.Factory.FromAsync<byte[], int, int>(stream.BeginWrite, stream.EndWrite, header, 0, header.Length, ctx).ContinueWith(BeginWriteCallback).ContinueWith(TaskExceptionHandler, TaskContinuationOptions.OnlyOnFaulted);			
 

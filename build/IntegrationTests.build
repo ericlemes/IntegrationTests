@@ -10,7 +10,7 @@
 		<OutputDir>Z:\</OutputDir>
 		<BigRequestSize>10000</BigRequestSize>		
 		<WebServiceUri>http://192.168.2.12/integrationtests/IntegrationTestsService.svc</WebServiceUri>		
-		<NetTcpUri>net.tcp://localhost/integrationtests/IntegrationTestsService.svc</NetTcpUri>		
+		<NetTcpUri>net.tcp://192.168.2.12/integrationtests/IntegrationTestsService.svc</NetTcpUri>		
 		<WebAppUri>http://localhost/integrationtests2/GenericHandler.ashx</WebAppUri>		
 		<!-- WebAppUri>http://localhost:64457/GenericHandler.ashx</WebAppUri -->		
 		<TotalBatches>500</TotalBatches>
@@ -58,7 +58,7 @@
     <Iteration Include="4">
 		<Id>40</Id>
 	</Iteration>
-	<Iteration Include="5">
+	<!-- Iteration Include="5">
 		<Id>50</Id>
 	</Iteration>	
 	<Iteration Include="6">
@@ -75,7 +75,7 @@
 	</Iteration>
 	<Iteration Include="10">
 		<Id>100</Id>
-	</Iteration>	
+	</Iteration -->	
   </ItemGroup>
 	
 	<UsingTask TaskName="EmptyClientTable" AssemblyFile="$(TestClassesAssembly)" />
@@ -222,7 +222,7 @@
 		<!-- CallTarget Targets="SoapSmallBatches" / -->		
 		<!-- CallTarget Targets="SoapSmallBatchesAsync" / -->		
 		<!--CallTarget Targets="HttpRequest" / -->		
-		<!-- CallTarget Targets="NetTcpSmallBatches" / -->			
+		<CallTarget Targets="NetTcpSmallBatches" />			
 		<!-- CallTarget Targets="NetTcpSmallBatchesAsync" / -->			
 		<!-- CallTarget Targets="TcpClientSingleThreadTest" /> 
 		<CallTarget Targets="TcpClientMultiThreadTest" / -->		
@@ -230,7 +230,7 @@
 		<!-- CallTarget Targets="MSMQTest" />
 		<CallTarget Targets="MSMQTransactionalTest" / -->
 		<!-- CallTarget Targets="TcpClientMultiThreadTest2" / -->
-		<CallTarget Targets="TcpClientMultiThreadTest4" />
+		<!-- CallTarget Targets="TcpClientMultiThreadTest4" / -->
 		<!-- CallTarget Targets="TcpClientMultiThreadTest" / -->
 		<!-- CallTarget Targets="RabbitMQTest" / -->
 	</Target>
@@ -266,9 +266,9 @@
 
 	<Target Name="RunAllTests" Inputs="%(Iteration.Id)" Outputs="%(Iteration.Id)a">				
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20;Id=%(Iteration.Id)" />			
-		<!-- MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50;Id=%(Iteration.Id)" />
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50;Id=%(Iteration.Id)" />
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=500000;TotalBatches=500;Id=%(Iteration.Id)" />		
-		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000;Id=%(Iteration.Id)" / -->		
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=1000000;TotalBatches=1000;Id=%(Iteration.Id)" />		
 		
 		<!-- MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=20000;TotalBatches=20" />			
 		<MSBuild Projects="$(MSBuildProjectFile)" Targets="RunClientTests" Properties="BigRequestSize=50000;TotalBatches=50" />
