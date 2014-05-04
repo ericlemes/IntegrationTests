@@ -50,6 +50,13 @@ namespace IntegrationTests.TestClasses.Client
             set;
         }
 
+        [Required]
+        public bool UseSynchronousServer
+        {
+            get;
+            set;
+        }
+
         public override bool Execute()
         {
             Binding binding;
@@ -95,7 +102,10 @@ namespace IntegrationTests.TestClasses.Client
             Queue<Task<ServiceTable[]>> tasks = new Queue<Task<ServiceTable[]>>();            
             for (int i = 0; i < TotalBatches; i++)
             {
-                tasks.Enqueue(client.GetServiceTablesAsynchronousAsync(count, count + (BatchSize - 1)));                
+                if (UseSynchronousServer)
+                    tasks.Enqueue(client.GetServiceTablesAsync(count, count + (BatchSize - 1)));
+                else
+                    tasks.Enqueue(client.GetServiceTablesAsynchronousAsync(count, count + (BatchSize - 1)));                
                 count += BatchSize;
                 
             }

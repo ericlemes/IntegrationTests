@@ -58,7 +58,7 @@
     <Iteration Include="4">
 		<Id>40</Id>
 	</Iteration>
-	<!-- Iteration Include="5">
+	<Iteration Include="5">
 		<Id>50</Id>
 	</Iteration>	
 	<Iteration Include="6">
@@ -75,7 +75,7 @@
 	</Iteration>
 	<Iteration Include="10">
 		<Id>100</Id>
-	</Iteration -->	
+	</Iteration>	
   </ItemGroup>
 	
 	<UsingTask TaskName="EmptyClientTable" AssemblyFile="$(TestClassesAssembly)" />
@@ -150,8 +150,13 @@
 	
 	<Target Name="SoapSmallBatchesAsync">		
 		<EmptyClientTable ConnString="$(ConnString)" />				
-		<WCFSmallBatchesAsyncTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(WebServiceUri)" EndpointType="http" />
+		<WCFSmallBatchesAsyncTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(WebServiceUri)" EndpointType="http" UseSynchronousServer="false" />
 	</Target>						
+	
+	<Target Name="SoapSmallBatchesAsyncSyncServer">		
+		<EmptyClientTable ConnString="$(ConnString)" />				
+		<WCFSmallBatchesAsyncTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(WebServiceUri)" EndpointType="http" UseSynchronousServer="true" />
+	</Target>							
 	
 	<Target Name="NetTcpSmallBatches">		
 		<EmptyClientTable ConnString="$(ConnString)" />						
@@ -160,8 +165,13 @@
 	
 	<Target Name="NetTcpSmallBatchesAsync">		
 		<EmptyClientTable ConnString="$(ConnString)" />						
-		<WCFSmallBatchesAsyncTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(NetTcpUri)" EndpointType="nettcp" />
+		<WCFSmallBatchesAsyncTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(NetTcpUri)" EndpointType="nettcp" UseSynchronousServer="false" />
 	</Target>							
+	
+	<Target Name="NetTcpSmallBatchesAsyncSyncServer">		
+		<EmptyClientTable ConnString="$(ConnString)" />						
+		<WCFSmallBatchesAsyncTest TotalBatches="$(TotalBatches)" BatchSize="$(BatchSize)" ConnString="$(ConnString)" WebServiceUri="$(NetTcpUri)" EndpointType="nettcp" UseSynchronousServer="true" />
+	</Target>								
 	
 	<Target Name="HttpRequest">
 		<EmptyClientTable ConnString="$(ConnString)" />						
@@ -221,9 +231,11 @@
 		<CallTarget Targets="FileTransferBigRequest" / -->				
 		<!-- CallTarget Targets="SoapSmallBatches" / -->		
 		<!-- CallTarget Targets="SoapSmallBatchesAsync" / -->		
+		<CallTarget Targets="SoapSmallBatchesAsyncSyncServer" />
 		<!--CallTarget Targets="HttpRequest" / -->		
-		<CallTarget Targets="NetTcpSmallBatches" />			
+		<!-- CallTarget Targets="NetTcpSmallBatches" / -->	
 		<!-- CallTarget Targets="NetTcpSmallBatchesAsync" / -->			
+		<CallTarget Targets="NetTcpSmallBatchesAsyncSyncServer" />
 		<!-- CallTarget Targets="TcpClientSingleThreadTest" /> 
 		<CallTarget Targets="TcpClientMultiThreadTest" / -->		
 		<!-- CallTarget Targets="WebsphereMQTest" / -->
