@@ -97,6 +97,7 @@ namespace IntegrationTests.ServiceClasses
 
 			SqlCommand cmd = new SqlCommand("insert into ClientTable (ClientTableID, DescClientTable, Value, CreationDate, StringField1, StringField2)" +
 					"values (@ClientTableID, @DescClientTable, @Value, @CreationDate, @StringField1, @StringField2)", conn);
+            cmd.CommandTimeout = 0;
 
 			using (conn)
 			{

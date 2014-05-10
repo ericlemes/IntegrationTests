@@ -59,6 +59,7 @@
     <Compile Include="Client\TcpClientMultiThreadTest4.cs" />
     <Compile Include="Client\TcpClientSingleThreadTest.cs" />
     <Compile Include="Client\WCFSmallBatchesAsyncTest.cs" />
+    <Compile Include="Client\WCFSmallBatchesMultiThread.cs" />
     <Compile Include="Client\WCFSmallBatchesTest.cs" />
     <Compile Include="Client\WCFSmallRequestsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
